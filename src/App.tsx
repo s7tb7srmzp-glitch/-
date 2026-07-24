@@ -11,7 +11,7 @@ export default function App() {
 
   return (
     <PasscodeGate>
-      <main style={{ flex: 1, overflowY: "auto", paddingBottom: 24 }}>
+      <main style={{ flex: 1, overflowY: "auto", paddingBottom: 24, paddingTop: "env(safe-area-inset-top)" }}>
         {tab === "today" && <TodayPage />}
         {tab === "journal" && <JournalPage />}
         {tab === "report" && <ReportPage />}

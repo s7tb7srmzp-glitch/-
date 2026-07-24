@@ -67,9 +67,36 @@ export function TodayPage() {
     }
   }
 
+  function handleReset() {
+    setSelected({});
+    setMorningMessage(null);
+    setActualDay("");
+    setSatisfaction(3);
+    setEveningFeedback(null);
+  }
+
   return (
     <div>
       <div style={{ padding: "16px 16px 0" }}>
+        {morningMessage && (
+          <button
+            onClick={handleReset}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--color-text-muted)",
+              fontSize: 13,
+              padding: 0,
+              marginBottom: 10,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            ‹ 카드 다시 선택하기
+          </button>
+        )}
         <div style={{ fontSize: 13, color: "var(--color-text-muted)" }}>{date}</div>
         <h1 style={{ fontSize: 22, margin: "4px 0 0" }}>오늘의 명상</h1>
       </div>
