@@ -23,6 +23,7 @@ export interface DailyEntry {
 
 const ENTRIES_KEY = "daily-tarot:entries";
 const API_KEY_KEY = "daily-tarot:api-key";
+const UNLOCK_KEY = "daily-tarot:unlocked";
 
 function loadEntries(): Record<string, DailyEntry> {
   try {
@@ -72,6 +73,14 @@ export function getApiKey(): string {
 export function setApiKey(key: string): void {
   if (key) localStorage.setItem(API_KEY_KEY, key);
   else localStorage.removeItem(API_KEY_KEY);
+}
+
+export function isUnlocked(): boolean {
+  return localStorage.getItem(UNLOCK_KEY) === "true";
+}
+
+export function setUnlocked(): void {
+  localStorage.setItem(UNLOCK_KEY, "true");
 }
 
 export function todayString(): string {

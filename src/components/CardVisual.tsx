@@ -74,7 +74,7 @@ export function CardVisual({ card, size = "md" }: { card: TarotCard; size?: "sm"
         <CardFallback card={card} size={size} />
       ) : (
         <img
-          src={`/cards/${card.id}.webp`}
+          src={`${import.meta.env.BASE_URL}cards/${card.id}.webp`}
           alt={card.nameKo}
           onError={() => setImageFailed(true)}
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}

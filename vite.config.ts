@@ -2,7 +2,12 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
+// GitHub Pages 프로젝트 사이트로 배포되므로(레포지토리 이름 "-"),
+// 실제 서비스 경로는 https://<user>.github.io/-/ 입니다.
+const BASE_PATH = "/-/";
+
 export default defineConfig({
+  base: BASE_PATH,
   plugins: [
     react(),
     VitePWA({
@@ -16,8 +21,8 @@ export default defineConfig({
         background_color: "#1E2761",
         display: "standalone",
         orientation: "portrait",
-        start_url: "/",
-        scope: "/",
+        start_url: BASE_PATH,
+        scope: BASE_PATH,
         icons: [
           {
             src: "icons/icon-192.png",
@@ -41,7 +46,7 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
         runtimeCaching: [
           {
-            urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith("/cards/"),
+            urlPattern: ({ url }: { url: URL }) => url.pathname.includes("/cards/"),
             handler: "CacheFirst",
             options: {
               cacheName: "tarot-card-images",
