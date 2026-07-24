@@ -1,11 +1,13 @@
 import { getCardById, type Suit } from "../data/cards";
 import { ENERGY_CONTEXT, SECONDARY_MONTH_CARD_ID, TODAY_CARDS_WEIGHT } from "../data/energyContext";
 import { SPREAD_ORDER, SPREAD_POSITIONS } from "../data/spreadMeaning";
-import type { DrawnCards } from "./storage";
+import { getActiveMonthCard, type DrawnCards } from "./storage";
 
 function fixedEnergySummary(): string {
-  const lines = ENERGY_CONTEXT.map((item) => {
-    const card = getCardById(item.cardId);
+  const monthCardId = getActiveMonthCard().cardId;
+  const lines = ENERGY_CONTEXT.map((item, index) => {
+    const cardId = index === 2 ? monthCardId : item.cardId;
+    const card = getCardById(cardId);
     return `- ${item.label} (${item.weight}%): ${card?.nameKo} — ${item.description}`;
   });
   const star = getCardById(SECONDARY_MONTH_CARD_ID);
@@ -27,7 +29,7 @@ function todayCardsSummary(cards: DrawnCards): string {
 // AI(Claude 등)에게 보낼 해석 프롬프트. "분리 배열법 – 쓰리 카드 일일 명상법(100일)"의
 // 포지션 정의(메이저=원형/상징, 인물=인물상, 마이너=현실적 행동·결과)를 그대로 반영합니다.
 export function buildMorningPrompt(cards: DrawnCards): string {
-  const monthCard = getCardById(ENERGY_CONTEXT[2].cardId);
+  const monthCard = getCardById(getActiveMonthCard().cardId);
   const weekCard = getCardById(SECONDARY_MONTH_CARD_ID);
   return `당신은 사용자 전용 타로 명상 가이드입니다. 아래 고정 에너지와 오늘 뽑은 3장의 카드를 결합하여, 오늘 하루를 위한 따뜻하고 "구체적인" 한국어 메시지를 6~8문장으로 작성하세요.
 
@@ -37,10 +39,10 @@ ${fixedEnergySummary()}
 [오늘 뽑은 카드 — 쓰리 카드 일일 명상법(100일), 분리 배열법 응용]
 ${todayCardsSummary(cards)}
 
-작성 규칙:
-1. 먼저 "오늘의 원형(메이저)"과 "오늘의 인물상(인물 카드)"을 엮어서, 오늘이 어떤 성격의 날인지 구체적으로 묘사하세요 (예: "오늘은 ~한 분위기의, ~하게 살아가게 되는 날이에요").
-2. 그다음 문장은 반드시 이런 형식으로 쓰세요: "이번 달의 카드인 ${monthCard?.nameKo}과 이번 주의 ${weekCard?.nameKo}의 영향으로, [구체적인 행동]을 하는 것이 좋겠어요." — 여기서 [구체적인 행동]은 "현실적 행동과 결과(마이너 카드)"의 의미를 실제 생활 속 행동(일/업무, 관계, 대화나 결정, 돈·건강·루틴 등 구체적 영역)으로 풀어서 제시해야 합니다. 추상적인 조언("편안하게 맞이하세요" 같은 말) 대신 오늘 실제로 할 수 있는 구체적 행동을 제시하세요.
-3. 고정 에너지(전차의 의지력 30%, 정의의 균형 25%)가 그 행동을 어떻게 뒷받침하는지 짧게 덧붙이세요.
+작성 순서를 반드시 이 순서대로 지키세요:
+1. 먼저 오늘 뽑은 3장의 카드만으로 하루를 해석하세요. "오늘의 원형(메이저)"과 "오늘의 인물상(인물 카드)"을 엮어서 오늘이 어떤 성격의 날인지 묘사하고, 이어서 "현실적 행동과 결과(마이너 카드)"의 의미를 실제 생활 속 행동(일/업무, 관계, 대화나 결정, 돈·건강·루틴 등 구체적 영역)으로 풀어서 구체적인 행동을 제시하세요. 추상적인 조언 대신 오늘 실제로 할 수 있는 구체적 행동을 제시하세요.
+2. 그다음, 별도의 문장으로 "이번 달의 카드인 ${monthCard?.nameKo}과 이번 주의 ${weekCard?.nameKo}의 기운이 오늘의 행동에 어떻게 더해지는지" 설명하세요 — 이 두 카드는 1번에서 제시한 행동을 뒷받침하거나 색을 더하는 "나중에 언급되는" 배경 에너지입니다. 절대 1번보다 먼저 언급하지 마세요.
+3. 마지막으로 고정 에너지(전차의 의지력 30%, 정의의 균형 25%)가 오늘 하루의 바탕이 되어줌을 짧게 덧붙이세요.
 4. 명령조가 아닌 다정한 명상 가이드의 어조를 유지하되, 구체성을 절대 잃지 마세요.`;
 }
 
@@ -88,6 +90,7 @@ function buildActionSentence(minor: { suit?: Suit; number: number; upright: stri
 }
 
 // API 키가 없을 때 사용하는 결정적(deterministic) 템플릿 해석 — 오프라인에서도 항상 동작합니다.
+// 순서: 1) 오늘 뽑은 3장으로 하루 해석 → 2) 이달/이번 주 카드의 영향 → 3) 고정 에너지 비중
 export function buildTemplateMorningMessage(cards: DrawnCards): string {
   const major = getCardById(cards.major);
   const person = getCardById(cards.person);
@@ -96,15 +99,15 @@ export function buildTemplateMorningMessage(cards: DrawnCards): string {
 
   const chariot = getCardById(ENERGY_CONTEXT[0].cardId);
   const justice = getCardById(ENERGY_CONTEXT[1].cardId);
-  const monthCard = getCardById(ENERGY_CONTEXT[2].cardId);
+  const monthCard = getCardById(getActiveMonthCard().cardId);
   const weekCard = getCardById(SECONDARY_MONTH_CARD_ID);
   const actionSentence = buildActionSentence(minor);
 
   return [
     `오늘은 ${major.nameKo}의 기운이 함께하는 날이에요. ${major.upright}이 오늘의 분위기와 주제를 감싸고, 그 원형은 오늘 ${person.nameKo}의 모습으로 나에게 살아갑니다 — ${person.upright}.`,
-    `이번 달의 카드인 ${monthCard?.nameKo}과 이번 주의 ${weekCard?.nameKo}의 영향으로, ${actionSentence}`,
-    `${minor.nameKo}가 알려주는 결이 바로 이 행동이에요: ${minor.upright}.`,
-    `당신의 본연의 의지력인 ${chariot?.nameKo}(30%)이 이 행동을 뒷받침하고, ${justice?.nameKo}(25%)의 균형 감각이 오늘의 판단 기준이 되어줄 거예요.`,
+    `현실에서는 ${minor.nameKo}의 결로 이런 행동이 필요해요: ${actionSentence}`,
+    `여기에 이번 달의 카드인 ${monthCard?.nameKo}과 이번 주의 ${weekCard?.nameKo}의 기운이 함께 더해져요 — 그 안정과 희망의 결이, 오늘의 행동을 한결 든든하게 뒷받침해줄 거예요.`,
+    `당신의 본연의 의지력인 ${chariot?.nameKo}(30%)과 ${justice?.nameKo}(25%)의 균형 감각도 오늘 하루의 바탕이 되어줄 거예요.`,
   ].join(" ");
 }
 
