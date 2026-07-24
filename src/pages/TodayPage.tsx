@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { CardSpread, type SelectedCards } from "../components/CardSpread";
 import type { Arcana, TarotCard } from "../data/cards";
 import { generateEveningFeedback, generateMorningMessage } from "../lib/generate";
-import { getEntry, saveEvening, saveMorning, todayString, type DrawnCards } from "../lib/storage";
+import { getEntry, needsMonthCardInput, saveEvening, saveMorning, todayString, type DrawnCards } from "../lib/storage";
 
 const card = {
   background: "rgba(255,255,255,0.05)",
@@ -11,8 +11,9 @@ const card = {
   margin: "0 16px 16px",
 };
 
-export function TodayPage() {
+export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
   const date = todayString();
+  const [monthCardStale] = useState(needsMonthCardInput());
   const [selected, setSelected] = useState<SelectedCards>({});
   const [morningMessage, setMorningMessage] = useState<string | null>(null);
   const [morningLoading, setMorningLoading] = useState(false);
@@ -100,6 +101,27 @@ export function TodayPage() {
         <div style={{ fontSize: 13, color: "var(--color-text-muted)" }}>{date}</div>
         <h1 style={{ fontSize: 22, margin: "4px 0 0" }}>오늘의 명상</h1>
       </div>
+
+      {monthCardStale && (
+        <button
+          onClick={onGoToSettings}
+          style={{
+            display: "block",
+            width: "calc(100% - 32px)",
+            margin: "14px 16px 0",
+            padding: "12px 14px",
+            borderRadius: 12,
+            border: "1px solid rgba(249,231,149,0.4)",
+            background: "rgba(249,231,149,0.12)",
+            color: "var(--color-accent)",
+            fontSize: 13,
+            textAlign: "left",
+            cursor: onGoToSettings ? "pointer" : "default",
+          }}
+        >
+          🗓️ 이번 달의 카드를 아직 설정하지 않았어요 — 설정 탭에서 입력해주세요 ›
+        </button>
+      )}
 
       <CardSpread selected={selected} onChange={handleCardChange} />
 

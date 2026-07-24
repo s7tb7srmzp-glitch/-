@@ -1,5 +1,7 @@
 // 서버 없이 브라우저 로컬 저장소에만 데이터를 저장합니다 (개인정보 보호).
 
+import { ENERGY_CONTEXT } from "../data/energyContext";
+
 export interface DrawnCards {
   major: string; // card id
   person: string;
@@ -24,6 +26,7 @@ export interface DailyEntry {
 const ENTRIES_KEY = "daily-tarot:entries";
 const API_KEY_KEY = "daily-tarot:api-key";
 const UNLOCK_KEY = "daily-tarot:unlocked";
+const MONTH_CARD_KEY = "daily-tarot:month-card";
 
 function loadEntries(): Record<string, DailyEntry> {
   try {
@@ -88,4 +91,37 @@ export function todayString(): string {
   const offset = now.getTimezoneOffset();
   const local = new Date(now.getTime() - offset * 60_000);
   return local.toISOString().slice(0, 10);
+}
+
+export function currentYearMonth(): string {
+  return todayString().slice(0, 7); // YYYY-MM
+}
+
+export interface MonthCardRecord {
+  yearMonth: string; // YYYY-MM, 이 카드를 설정한 달
+  cardId: string;
+}
+
+function getMonthCardRecord(): MonthCardRecord | null {
+  try {
+    const raw = localStorage.getItem(MONTH_CARD_KEY);
+    return raw ? (JSON.parse(raw) as MonthCardRecord) : null;
+  } catch {
+    return null;
+  }
+}
+
+// 매달 1일, 사용자가 그달의 운세 카드를 직접 뽑아 입력합니다 (설정 탭에서).
+export function setMonthCard(cardId: string): void {
+  localStorage.setItem(MONTH_CARD_KEY, JSON.stringify({ yearMonth: currentYearMonth(), cardId }));
+}
+
+export function getActiveMonthCard(): MonthCardRecord {
+  return getMonthCardRecord() ?? { yearMonth: currentYearMonth(), cardId: ENERGY_CONTEXT[2].cardId };
+}
+
+// 이번 달 카드가 아직 입력되지 않았거나, 지난달 카드가 그대로 남아있으면 true.
+export function needsMonthCardInput(): boolean {
+  const record = getMonthCardRecord();
+  return !record || record.yearMonth !== currentYearMonth();
 }

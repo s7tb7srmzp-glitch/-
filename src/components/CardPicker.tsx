@@ -1,28 +1,31 @@
 import { useMemo, useState } from "react";
-import { cardsByArcana, type Arcana, type TarotCard } from "../data/cards";
+import { ALL_CARDS, cardsByArcana, type Arcana, type TarotCard } from "../data/cards";
 import { SPREAD_POSITIONS } from "../data/spreadMeaning";
 import { CardVisual } from "./CardVisual";
 
-export function CardPicker({
-  arcana,
-  onSelect,
-  onClose,
-}: {
-  arcana: Arcana;
+interface CardPickerProps {
+  arcana?: Arcana;
+  cards?: TarotCard[];
+  title?: string;
+  question?: string;
   onSelect: (card: TarotCard) => void;
   onClose: () => void;
-}) {
+}
+
+export function CardPicker({ arcana, cards, title, question, onSelect, onClose }: CardPickerProps) {
   const [query, setQuery] = useState("");
-  const position = SPREAD_POSITIONS[arcana];
-  const cards = cardsByArcana(arcana);
+  const position = arcana ? SPREAD_POSITIONS[arcana] : undefined;
+  const cardList = cards ?? (arcana ? cardsByArcana(arcana) : ALL_CARDS);
+  const displayTitle = title ?? (position ? `${position.title} 카드 선택` : "카드 선택");
+  const displayQuestion = question ?? position?.question ?? "";
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return cards;
-    return cards.filter(
+    if (!q) return cardList;
+    return cardList.filter(
       (c) => c.nameKo.toLowerCase().includes(q) || c.nameEn.toLowerCase().includes(q) || c.keywords.some((k) => k.includes(q)),
     );
-  }, [cards, query]);
+  }, [cardList, query]);
 
   return (
     <div
@@ -53,8 +56,8 @@ export function CardPicker({
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 16 }}>{position.title} 카드 선택</div>
-            <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{position.question}</div>
+            <div style={{ fontWeight: 700, fontSize: 16 }}>{displayTitle}</div>
+            {displayQuestion && <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{displayQuestion}</div>}
           </div>
           <button
             onClick={onClose}
