@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { TarotCard } from "../data/cards";
 import { SUIT_THEME } from "../data/cards";
 
@@ -11,19 +12,21 @@ function cardColor(card: TarotCard): string {
   return PERSON_COLOR;
 }
 
-export function CardVisual({ card, size = "md" }: { card: TarotCard; size?: "sm" | "md" | "lg" }) {
-  const color = cardColor(card);
-  const dims = size === "lg" ? { w: 140, h: 224 } : size === "md" ? { w: 104, h: 166 } : { w: 72, h: 115 };
+const DIMS = {
+  lg: { w: 140, h: 224 },
+  md: { w: 104, h: 166 },
+  sm: { w: 72, h: 115 },
+};
 
+function CardFallback({ card, size }: { card: TarotCard; size: "sm" | "md" | "lg" }) {
+  const color = cardColor(card);
   return (
     <div
       style={{
-        width: dims.w,
-        height: dims.h,
+        width: "100%",
+        height: "100%",
         borderRadius: 12,
         background: `linear-gradient(160deg, ${color} 0%, #10143a 130%)`,
-        border: "2px solid rgba(255,255,255,0.35)",
-        boxShadow: "0 6px 18px rgba(0,0,0,0.35)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -51,8 +54,38 @@ export function CardVisual({ card, size = "md" }: { card: TarotCard; size?: "sm"
   );
 }
 
+export function CardVisual({ card, size = "md" }: { card: TarotCard; size?: "sm" | "md" | "lg" }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const dims = DIMS[size];
+
+  return (
+    <div
+      style={{
+        width: dims.w,
+        height: dims.h,
+        borderRadius: 12,
+        border: "2px solid rgba(255,255,255,0.35)",
+        boxShadow: "0 6px 18px rgba(0,0,0,0.35)",
+        overflow: "hidden",
+        background: "#10143a",
+      }}
+    >
+      {imageFailed ? (
+        <CardFallback card={card} size={size} />
+      ) : (
+        <img
+          src={`/cards/${card.id}.webp`}
+          alt={card.nameKo}
+          onError={() => setImageFailed(true)}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+      )}
+    </div>
+  );
+}
+
 export function EmptyCardSlot({ label, onClick, size = "md" }: { label: string; onClick: () => void; size?: "sm" | "md" | "lg" }) {
-  const dims = size === "lg" ? { w: 140, h: 224 } : size === "md" ? { w: 104, h: 166 } : { w: 72, h: 115 };
+  const dims = DIMS[size];
   return (
     <button
       onClick={onClick}
