@@ -1,0 +1,46 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --color-bg: #10143a;
+  --color-bg-elevated: #1e2761;
+  --color-primary: #cadcfc;
+  --color-accent: #f9e795;
+  --color-text: #f4f6ff;
+  --color-text-muted: #a8b3e0;
+  color-scheme: dark;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
