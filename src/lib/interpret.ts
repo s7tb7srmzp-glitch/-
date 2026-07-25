@@ -132,8 +132,9 @@ export interface EveningBlocks {
 }
 
 /**
- * AI 출력에서 두 블록을 분리합니다.
- * 제목을 찾지 못하면 지어내지 않고, 전체를 대조 블록에 넣고 한마디는 비워 둡니다.
+ * AI 출력에서 두 블록을 분리합니다. 제목 글자를 기준으로 나누며, 두 제목이 모두
+ * 발견되면 어느 쪽이 먼저 나오든 상관없이 각 제목 뒤의 내용을 해당 블록에 담습니다.
+ * 제목이 하나만 발견되거나 아예 없으면 지어내지 않고 전체를 대조 블록에 넣고 한마디는 비워 둡니다.
  */
 export function parseEveningBlocks(raw: string): EveningBlocks {
   const text = raw.trim();
@@ -142,12 +143,22 @@ export function parseEveningBlocks(raw: string): EveningBlocks {
   const compMatch = compRe.exec(text);
   const noteMatch = noteRe.exec(text);
 
-  if (!compMatch || !noteMatch || noteMatch.index < compMatch.index) {
+  if (!compMatch || !noteMatch) {
     return { comparison: text, note: "" };
   }
-  const comparison = text.slice(compMatch.index + compMatch[0].length, noteMatch.index).trim();
-  const note = text.slice(noteMatch.index + noteMatch[0].length).trim();
-  return { comparison, note };
+
+  const marks = (
+    [
+      { label: "comparison", start: compMatch.index, end: compMatch.index + compMatch[0].length },
+      { label: "note", start: noteMatch.index, end: noteMatch.index + noteMatch[0].length },
+    ] as const
+  ).slice().sort((a, b) => a.start - b.start);
+
+  const [first, second] = marks;
+  const result: EveningBlocks = { comparison: "", note: "" };
+  result[first.label] = text.slice(first.end, second.start).trim();
+  result[second.label] = text.slice(second.end).trim();
+  return result;
 }
 
 // ─────────────────────────────────────────────────────────────
