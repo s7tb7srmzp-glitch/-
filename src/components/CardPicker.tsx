@@ -8,11 +8,15 @@ interface CardPickerProps {
   cards?: TarotCard[];
   title?: string;
   question?: string;
+  /** false면 검색창(및 자판 트리거)을 아예 렌더링하지 않습니다. 목록이 짧을 때 씁니다. */
+  searchable?: boolean;
+  /** 있으면 제목 옆에 뒤로가기 버튼을 보여줍니다 (예: 핍 수트 선택으로 돌아가기). */
+  onBack?: () => void;
   onSelect: (card: TarotCard) => void;
   onClose: () => void;
 }
 
-export function CardPicker({ arcana, cards, title, question, onSelect, onClose }: CardPickerProps) {
+export function CardPicker({ arcana, cards, title, question, searchable = true, onBack, onSelect, onClose }: CardPickerProps) {
   const [query, setQuery] = useState("");
   const position = arcana ? SPREAD_POSITIONS[arcana] : undefined;
   const cardList = cards ?? (arcana ? cardsByArcana(arcana) : ALL_CARDS);
@@ -20,12 +24,13 @@ export function CardPicker({ arcana, cards, title, question, onSelect, onClose }
   const displayQuestion = question ?? position?.question ?? "";
 
   const filtered = useMemo(() => {
+    if (!searchable) return cardList;
     const q = query.trim().toLowerCase();
     if (!q) return cardList;
     return cardList.filter(
       (c) => c.nameKo.toLowerCase().includes(q) || c.nameEn.toLowerCase().includes(q) || c.keywords.some((k) => k.includes(q)),
     );
-  }, [cardList, query]);
+  }, [cardList, query, searchable]);
 
   return (
     <div
@@ -55,9 +60,20 @@ export function CardPicker({ arcana, cards, title, question, onSelect, onClose }
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 16 }}>{displayTitle}</div>
-            {displayQuestion && <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{displayQuestion}</div>}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {onBack && (
+              <button
+                onClick={onBack}
+                aria-label="뒤로"
+                style={{ background: "none", border: "none", color: "#fff", fontSize: 20, cursor: "pointer", padding: 0 }}
+              >
+                ‹
+              </button>
+            )}
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 16 }}>{displayTitle}</div>
+              {displayQuestion && <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{displayQuestion}</div>}
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -68,20 +84,22 @@ export function CardPicker({ arcana, cards, title, question, onSelect, onClose }
           </button>
         </div>
 
-        <input
-          autoFocus
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="카드 이름 또는 키워드로 검색"
-          style={{
-            padding: "10px 14px",
-            borderRadius: 10,
-            border: "1px solid rgba(255,255,255,0.2)",
-            background: "rgba(255,255,255,0.06)",
-            color: "#fff",
-            fontSize: 14,
-          }}
-        />
+        {searchable && (
+          <input
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="카드 이름 또는 키워드로 검색"
+            style={{
+              padding: "10px 14px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.2)",
+              background: "rgba(255,255,255,0.06)",
+              color: "#fff",
+              fontSize: 14,
+            }}
+          />
+        )}
 
         <div
           style={{
