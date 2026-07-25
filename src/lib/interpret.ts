@@ -1,125 +1,188 @@
-import { getCardById, type Suit } from "../data/cards";
-import { ENERGY_CONTEXT, SECONDARY_MONTH_CARD_ID, TODAY_CARDS_WEIGHT } from "../data/energyContext";
+import { getCardById, type TarotCard } from "../data/cards";
 import { SPREAD_ORDER, SPREAD_POSITIONS } from "../data/spreadMeaning";
-import { getActiveMonthCard, type DrawnCards } from "./storage";
+import type { DrawnCards } from "./storage";
 
-function fixedEnergySummary(): string {
-  const monthCardId = getActiveMonthCard().cardId;
-  const lines = ENERGY_CONTEXT.map((item, index) => {
-    const cardId = index === 2 ? monthCardId : item.cardId;
-    const card = getCardById(cardId);
-    return `- ${item.label} (${item.weight}%): ${card?.nameKo} — ${item.description}`;
-  });
-  const star = getCardById(SECONDARY_MONTH_CARD_ID);
-  if (star) lines.push(`  (보조) ${star.nameKo} — 영적 희망의 결`);
-  lines.push(`- 오늘의 카드 3장 (${TODAY_CARDS_WEIGHT}%): 구체적인 오늘의 일상 가이드`);
-  return lines.join("\n");
+// 분리 배열법 자리별 참조 필드
+//   1번(원형)   = 메이저 → imagery + keywords
+//   2번(인물상) = 인물   → imagery + persona
+//   3번(현실)   = 핍     → imagery + situation
+// 카드 의미는 cards.json에 적힌 것만 사용하며, 여기서 새로 지어내지 않습니다.
+// 역방향(reversed)은 이 타로 방식에서 쓰지 않으므로 어떤 경로에서도 참조하지 않습니다.
+
+const NOT_WRITTEN = "아직 작성되지 않았습니다";
+
+/** 저녁 피드백 두 블록의 제목. AI 출력 파싱과 화면 표시가 이 문자열을 공유합니다. */
+export const EVENING_COMPARISON_TITLE = "오늘의 카드 대조";
+export const EVENING_NOTE_TITLE = "오늘의 한마디";
+
+export const OFFLINE_MORNING_NOTICE = "AI 연결 없이 카드 데이터만 표시합니다.";
+export const OFFLINE_EVENING_NOTICE = "AI 연결이 없어 오늘의 대조를 만들 수 없습니다.";
+
+function hasText(v: string | undefined): v is string {
+  return typeof v === "string" && v.trim().length > 0;
+}
+
+/** 자리별로 참조해야 할 데이터를 "라벨: 내용" 줄 목록으로 만듭니다. 비어 있으면 지어내지 않고 그대로 표시합니다. */
+function positionDetailLines(card: TarotCard): string[] {
+  if (card.arcana === "major") {
+    const keywords = card.keywords.filter(hasText);
+    return [`키워드: ${keywords.length > 0 ? keywords.join(", ") : NOT_WRITTEN}`];
+  }
+  if (card.arcana === "person") {
+    const p = card.persona;
+    return [
+      `태도: ${hasText(p?.attitude) ? p.attitude : NOT_WRITTEN}`,
+      `행동: ${hasText(p?.behavior) ? p.behavior : NOT_WRITTEN}`,
+      `과할 때: ${hasText(p?.excess) ? p.excess : NOT_WRITTEN}`,
+      `부족할 때: ${hasText(p?.lack) ? p.lack : NOT_WRITTEN}`,
+    ];
+  }
+  const s = card.situation;
+  return [
+    `상황: ${hasText(s?.scene) ? s.scene : NOT_WRITTEN}`,
+    `오늘 할 행동: ${hasText(s?.action) ? s.action : NOT_WRITTEN}`,
+    `예상되는 결과: ${hasText(s?.outcome) ? s.outcome : NOT_WRITTEN}`,
+    `주의: ${hasText(s?.caution) ? s.caution : NOT_WRITTEN}`,
+  ];
 }
 
 function todayCardsSummary(cards: DrawnCards): string {
   return SPREAD_ORDER.map((arcana) => {
-    const id = cards[arcana];
-    const card = getCardById(id);
+    const card = getCardById(cards[arcana]);
     const pos = SPREAD_POSITIONS[arcana];
     if (!card) return "";
-    return `- [${pos.title}] ${card.nameKo}: ${pos.question}\n  카드 의미: ${card.upright}`;
-  }).join("\n");
+    const detail = positionDetailLines(card)
+      .map((line) => `  ${line}`)
+      .join("\n");
+    return [
+      `- [${pos.title}] ${card.nameKo} (${pos.question})`,
+      `  그림 묘사: ${hasText(card.imagery) ? card.imagery : NOT_WRITTEN}`,
+      detail,
+    ].join("\n");
+  })
+    .filter(Boolean)
+    .join("\n\n");
 }
 
-// AI(Claude 등)에게 보낼 해석 프롬프트. "분리 배열법 – 쓰리 카드 일일 명상법(100일)"의
-// 포지션 정의(메이저=원형/상징, 인물=인물상, 마이너=현실적 행동·결과)를 그대로 반영합니다.
-export function buildMorningPrompt(cards: DrawnCards): string {
-  const monthCard = getCardById(getActiveMonthCard().cardId);
-  const weekCard = getCardById(SECONDARY_MONTH_CARD_ID);
-  return `당신은 사용자 전용 타로 명상 가이드입니다. 아래 고정 에너지와 오늘 뽑은 3장의 카드를 결합하여, 오늘 하루를 위한 따뜻하고 "구체적인" 한국어 메시지를 6~8문장으로 작성하세요.
+// ─────────────────────────────────────────────────────────────
+// 아침 (API 경로)
+// ─────────────────────────────────────────────────────────────
 
-[고정 에너지 컨텍스트 — 항상 유지되는 나의 본질]
-${fixedEnergySummary()}
+// "분리 배열법 – 쓰리 카드 일일 명상법(100일)"의 포지션 정의를 그대로 반영합니다.
+// 오늘 뽑은 3장만 다루며, 층위 카드(성격·영혼/올해/이번 주/이번 달)는 언급하지 않습니다.
+export function buildMorningPrompt(cards: DrawnCards): string {
+  return `당신은 사용자 전용 타로 명상 가이드입니다. 오늘 뽑은 3장의 카드만으로, 오늘 하루를 위한 한국어 메시지를 4~5문장으로 작성하세요.
 
 [오늘 뽑은 카드 — 쓰리 카드 일일 명상법(100일), 분리 배열법 응용]
 ${todayCardsSummary(cards)}
 
-작성 순서를 반드시 이 순서대로 지키세요:
-1. 먼저 오늘 뽑은 3장의 카드만으로 하루를 해석하세요. "오늘의 원형(메이저)"과 "오늘의 인물상(인물 카드)"을 엮어서 오늘이 어떤 성격의 날인지 묘사하고, 이어서 "현실적 행동과 결과(마이너 카드)"의 의미를 실제 생활 속 행동(일/업무, 관계, 대화나 결정, 돈·건강·루틴 등 구체적 영역)으로 풀어서 구체적인 행동을 제시하세요. 추상적인 조언 대신 오늘 실제로 할 수 있는 구체적 행동을 제시하세요.
-2. 그다음, 별도의 문장으로 "이번 달의 카드인 ${monthCard?.nameKo}과 이번 주의 ${weekCard?.nameKo}의 기운이 오늘의 행동에 어떻게 더해지는지" 설명하세요 — 이 두 카드는 1번에서 제시한 행동을 뒷받침하거나 색을 더하는 "나중에 언급되는" 배경 에너지입니다. 절대 1번보다 먼저 언급하지 마세요.
-3. 마지막으로 고정 에너지(전차의 의지력 30%, 정의의 균형 25%)가 오늘 하루의 바탕이 되어줌을 짧게 덧붙이세요.
-4. 명령조가 아닌 다정한 명상 가이드의 어조를 유지하되, 구체성을 절대 잃지 마세요.`;
+[문장 순서]
+1. 먼저 세 장의 그림에 실제로 보이는 것을 짚으세요.
+2. 이어서 각 자리에 주어진 내용(메이저=키워드, 인물=태도·행동, 핍=상황·오늘 할 행동·예상되는 결과·주의)을 풀어 쓰세요.
+3. 마지막으로 세 자리가 오늘 하루 안에서 어떻게 이어지는지 연결하세요.
+
+[반드시 지킬 것]
+1. 위에 주어진 내용만 사용하세요. 카드의 의미를 새로 지어내지 마세요. 여기 적히지 않은 상징 풀이, 수트나 숫자의 일반적 의미, 다른 해석서의 내용을 끌어오지 마세요.
+2. "${NOT_WRITTEN}"라고 적힌 항목은 내용이 없다는 뜻입니다. 그 부분을 추측해서 채우지 말고 그냥 넘어가세요.
+3. 아직 하루가 시작되지 않았습니다. 평가하거나 위로하지 마세요. "좋은 하루가 될 거예요" 같은 말도 넣지 마세요.
+4. 사용자의 감정이나 상태를 추측하지 마세요. "지금 지쳐 있다면", "마음이 무겁겠지만" 같은 표현을 쓰지 마세요.
+5. 오늘 뽑지 않은 다른 카드나 기간(이번 주, 이번 달, 내일 등)은 절대 언급하지 마세요. 오직 이 3장과 오늘에만 집중하세요.
+6. 역방향은 이 타로 방식에서 쓰지 않습니다. 역방향 의미를 언급하지 마세요.`;
 }
 
-export function buildEveningPrompt(morningMessage: string, actualDay: string): string {
-  return `당신은 사용자 전용 타로 저널 가이드입니다. 아침의 해석과 실제 하루를 대조하여, 하루를 마무리하는 따뜻한 피드백을 4~6문장으로 작성하세요.
+// ─────────────────────────────────────────────────────────────
+// 저녁 (API 경로) — 반드시 두 블록으로 나뉜 출력을 요청합니다
+// ─────────────────────────────────────────────────────────────
 
-[아침의 해석]
-${morningMessage}
+export function buildEveningPrompt(cards: DrawnCards, actualDay: string, satisfaction: number): string {
+  return `당신은 사용자 전용 타로 저널 가이드입니다. 아침에 뽑은 3장과 사용자가 직접 쓴 저녁 성찰을 대조하여, 아래 두 블록을 작성하세요.
 
-[실제 보낸 하루 (사용자 기록)]
+[아침에 뽑은 3장]
+${todayCardsSummary(cards)}
+
+[사용자가 쓴 저녁 성찰 — 원문]
 ${actualDay}
 
-작성 규칙:
-1. 아침의 메시지가 실제로 어떻게 맞아떨어졌는지, 혹은 다르게 펼쳐졌는지 짚어주세요.
-2. 오늘 하루에서 배울 점이나 의미를 짧게 정리해주세요.
-3. 내일을 위한 부드러운 제안 한 가지로 마무리하세요.
-4. 다정하고 성찰적인 어조를 유지하세요.`;
+[사용자가 매긴 오늘의 만족도] 5점 만점에 ${satisfaction}점
+
+────────────────────────
+출력 형식 — 아래 두 제목을 그대로 쓰고, 순서도 그대로 지키세요.
+
+[${EVENING_COMPARISON_TITLE}]
+(5~7문장)
+- 아침 3장의 내용과 사용자가 쓴 성찰을 하나씩 직접 맞춰보세요.
+- 사용자가 실제로 쓴 표현을 근거로 인용하세요.
+- 어긋나거나 대응하지 않은 부분을 반드시 하나 이상 짚으세요. 전부 들어맞았다고 쓰지 마세요.
+- 만족도 ${satisfaction}점을 반영하세요. 점수가 낮은 날을 충만한 하루라고 쓰지 마세요.
+- 금지: 근거 없는 칭찬, 사용자가 쓰지 않은 감정 추측, 하루의 의미를 대신 결론짓는 문장("그게 오늘의 진짜 ○○였어요" 같은 것).
+
+[${EVENING_NOTE_TITLE}]
+(2~3문장)
+- 여기서는 위로하고 조언해도 됩니다. 따뜻하게 쓰세요.
+- 반드시 오늘 기록에 실제로 나온 내용에 근거하세요. 아무 날에나 붙는 일반론 위로는 쓰지 마세요.
+- 조언은 내일 실제로 해볼 수 있는 구체적인 것 하나만 제시하세요.
+- 금지: 과장된 칭송, 사용자의 성격이나 사람됨에 대한 평가, 내일 카드나 내일 상황에 대한 언급(아직 뽑지 않았습니다).
+
+두 블록의 역할을 섞지 마세요. 대조 블록에서 위로하지 말고, 한마디 블록에서 다시 평가하지 마세요.`;
 }
 
-const SUIT_ACTION_DOMAIN: Record<Suit, string> = {
-  wands: "업무나 지금 진행 중인 일",
-  cups: "사람들과의 관계와 감정",
-  swords: "중요한 대화나 결정",
-  pentacles: "돈이나 건강, 생활 루틴",
-};
-
-const RANK_ACTION_DETAIL: Record<number, string> = {
-  1: "{domain}에서 새로운 시도를 하나 작게 시작해보는 것이 좋겠어요.",
-  2: "{domain}에서 두 가지를 두고 저울질하고 있다면, 오늘은 그 사이의 균형점을 찾아 결정해보는 것이 좋겠어요.",
-  3: "{domain}에서 혼자 애쓰기보다, 주변 사람에게 손을 내밀어 함께 힘을 모아보는 것이 좋겠어요.",
-  4: "{domain}에서 잠시 멈추고, 지금까지 쌓아온 것을 다지며 숨 고르는 시간을 가져보는 것이 좋겠어요.",
-  5: "{domain}에서 예상치 못한 걸림돌이 있어도 조급해하지 말고, 거기서 배우는 자세로 넘어가 보는 것이 좋겠어요.",
-  6: "{domain}에서 주고받는 균형을 맞추면, 오늘 하루가 한결 편안해질 거예요.",
-  7: "{domain}에서 무리해서 새로 벌이기보다, 이미 쌓아온 것을 인내심 있게 지켜내는 데 집중해보는 것이 좋겠어요.",
-  8: "{domain}에서 속도감 있게 움직여야 할 타이밍이에요. 미루던 일을 오늘 바로 처리해보는 것이 좋겠어요.",
-  9: "{domain}에서 결승선이 가까워요. 스스로를 다독이며 마지막 힘을 내보는 것이 좋겠어요.",
-  10: "{domain}에서 하나를 매듭짓고, 다음 단계를 준비하는 것이 좋겠어요.",
-};
-
-function buildActionSentence(minor: { suit?: Suit; number: number; upright: string }): string {
-  if (!minor.suit) return minor.upright;
-  const domain = SUIT_ACTION_DOMAIN[minor.suit];
-  const template = RANK_ACTION_DETAIL[minor.number] ?? "{domain}에서 오늘의 흐름을 차분히 따라가 보는 것이 좋겠어요.";
-  return template.replace("{domain}", domain);
+export interface EveningBlocks {
+  comparison: string;
+  note: string;
 }
 
-// API 키가 없을 때 사용하는 결정적(deterministic) 템플릿 해석 — 오프라인에서도 항상 동작합니다.
-// 순서: 1) 오늘 뽑은 3장으로 하루 해석 → 2) 이달/이번 주 카드의 영향 → 3) 고정 에너지 비중
-export function buildTemplateMorningMessage(cards: DrawnCards): string {
-  const major = getCardById(cards.major);
-  const person = getCardById(cards.person);
-  const minor = getCardById(cards.minor);
-  if (!major || !person || !minor) return "카드를 3장 모두 선택해주세요.";
+/**
+ * AI 출력에서 두 블록을 분리합니다. 제목 글자를 기준으로 나누며, 두 제목이 모두
+ * 발견되면 어느 쪽이 먼저 나오든 상관없이 각 제목 뒤의 내용을 해당 블록에 담습니다.
+ * 제목이 하나만 발견되거나 아예 없으면 지어내지 않고 전체를 대조 블록에 넣고 한마디는 비워 둡니다.
+ */
+export function parseEveningBlocks(raw: string): EveningBlocks {
+  const text = raw.trim();
+  const compRe = new RegExp(`\\[?\\s*${EVENING_COMPARISON_TITLE}\\s*\\]?`);
+  const noteRe = new RegExp(`\\[?\\s*${EVENING_NOTE_TITLE}\\s*\\]?`);
+  const compMatch = compRe.exec(text);
+  const noteMatch = noteRe.exec(text);
 
-  const chariot = getCardById(ENERGY_CONTEXT[0].cardId);
-  const justice = getCardById(ENERGY_CONTEXT[1].cardId);
-  const monthCard = getCardById(getActiveMonthCard().cardId);
-  const weekCard = getCardById(SECONDARY_MONTH_CARD_ID);
-  const actionSentence = buildActionSentence(minor);
+  if (!compMatch || !noteMatch) {
+    return { comparison: text, note: "" };
+  }
 
-  return [
-    `오늘은 ${major.nameKo}의 기운이 함께하는 날이에요. ${major.upright}이 오늘의 분위기와 주제를 감싸고, 그 원형은 오늘 ${person.nameKo}의 모습으로 나에게 살아갑니다 — ${person.upright}.`,
-    `현실에서는 ${minor.nameKo}의 결로 이런 행동이 필요해요: ${actionSentence}`,
-    `여기에 이번 달의 카드인 ${monthCard?.nameKo}과 이번 주의 ${weekCard?.nameKo}의 기운이 함께 더해져요 — 그 안정과 희망의 결이, 오늘의 행동을 한결 든든하게 뒷받침해줄 거예요.`,
-    `당신의 본연의 의지력인 ${chariot?.nameKo}(30%)과 ${justice?.nameKo}(25%)의 균형 감각도 오늘 하루의 바탕이 되어줄 거예요.`,
-  ].join(" ");
+  const marks = (
+    [
+      { label: "comparison", start: compMatch.index, end: compMatch.index + compMatch[0].length },
+      { label: "note", start: noteMatch.index, end: noteMatch.index + noteMatch[0].length },
+    ] as const
+  ).slice().sort((a, b) => a.start - b.start);
+
+  const [first, second] = marks;
+  const result: EveningBlocks = { comparison: "", note: "" };
+  result[first.label] = text.slice(first.end, second.start).trim();
+  result[second.label] = text.slice(second.end).trim();
+  return result;
 }
 
-export function buildTemplateEveningFeedback(actualDay: string, satisfaction: number): string {
-  const tone = satisfaction >= 4 ? "오늘 하루, 아침의 메시지와 잘 공명한 것 같아요." : satisfaction <= 2 ? "오늘은 아침의 해석과는 다른 결의 하루였네요." : "오늘 하루는 예상과 비슷한 듯 다른 결로 흘러갔어요.";
-  const trimmed = actualDay.trim();
-  const excerpt = trimmed.length > 60 ? `${trimmed.slice(0, 60)}...` : trimmed;
-  return [
-    tone,
-    excerpt ? `"${excerpt}"라는 기록 속에서 오늘의 배움을 찾아보세요.` : "",
-    "내일은 오늘의 감각을 살려 조금 더 가볍게 하루를 시작해보는 건 어떨까요?",
-  ]
-    .filter(Boolean)
-    .join(" ");
+// ─────────────────────────────────────────────────────────────
+// 오프라인 경로 — "생성"을 흉내내지 않습니다
+// ─────────────────────────────────────────────────────────────
+
+// AI 연결이 없을 때는 연결 문장을 만들지 않습니다.
+// 매일 같은 연결 문형이 반복되면 그것이 곧 또 하나의 공식이 되기 때문입니다.
+// 자리별 라벨과 cards.json의 내용을 그대로 보여주기만 합니다.
+export function buildOfflineMorningView(cards: DrawnCards): string {
+  const blocks = SPREAD_ORDER.map((arcana) => {
+    const card = getCardById(cards[arcana]);
+    const pos = SPREAD_POSITIONS[arcana];
+    if (!card) return "";
+    return [
+      `[${pos.title}] ${card.nameKo}`,
+      `그림 묘사`,
+      `  ${hasText(card.imagery) ? card.imagery : NOT_WRITTEN}`,
+      ...positionDetailLines(card).map((line) => {
+        const [label, ...rest] = line.split(": ");
+        return `${label}\n  ${rest.join(": ")}`;
+      }),
+    ].join("\n");
+  }).filter(Boolean);
+
+  return [OFFLINE_MORNING_NOTICE, "", ...blocks.join("\n\n").split("\n")].join("\n");
 }
