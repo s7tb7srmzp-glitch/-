@@ -2,27 +2,47 @@ import { useRef, useState } from "react";
 import { CardPicker } from "../components/CardPicker";
 import { InstallGuide } from "../components/InstallGuide";
 import { ALL_CARDS, getCardById, type TarotCard } from "../data/cards";
-import { ENERGY_CONTEXT, SECONDARY_MONTH_CARD_ID, TODAY_CARDS_WEIGHT } from "../data/energyContext";
 import {
   buildBackup,
-  getActiveMonthCard,
+  getMonthCard,
+  getPersonalityCard,
+  getWeekCard,
+  getYearCard,
   getApiKey,
   importEntriesMerge,
   importEntriesOverwrite,
   needsMonthCardInput,
+  needsWeekCardInput,
   parseBackup,
   setApiKey,
   setMonthCard,
+  setPersonalityCard,
+  setWeekCard,
+  setYearCard,
   todayString,
   type DailyEntry,
 } from "../lib/storage";
 
-export function SettingsPage() {
+type LayerSlot = "personality" | "year" | "week" | "month";
+
+const SLOT_META: Record<LayerSlot, { label: string; pickerTitle: string; question: string }> = {
+  personality: { label: "성격·영혼", pickerTitle: "성격·영혼 카드 선택", question: "나의 본연의 의지와 영혼을 나타내는 카드는?" },
+  year: { label: "올해", pickerTitle: "올해의 카드 선택", question: "올 한 해를 관통하는 카드는?" },
+  week: { label: "이번 주", pickerTitle: "이번 주의 카드 선택", question: "이번 주, 나와 함께하는 에너지는?" },
+  month: { label: "이번 달", pickerTitle: "이번 달의 카드 선택", question: "이번 달, 나와 함께하는 에너지는?" },
+};
+
+export function SettingsPage({ onLayerCardsChanged }: { onLayerCardsChanged?: () => void }) {
   const [key, setKey] = useState(getApiKey());
   const [saved, setSaved] = useState(false);
-  const [monthCardRecord, setMonthCardRecord] = useState(getActiveMonthCard());
-  const [monthCardStale, setMonthCardStale] = useState(needsMonthCardInput());
-  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const [personality, setPersonalityState] = useState(getPersonalityCard());
+  const [year, setYearState] = useState(getYearCard());
+  const [week, setWeekState] = useState(getWeekCard());
+  const [month, setMonthState] = useState(getMonthCard());
+  const [weekStale, setWeekStale] = useState(needsWeekCardInput());
+  const [monthStale, setMonthStale] = useState(needsMonthCardInput());
+  const [pickerSlot, setPickerSlot] = useState<LayerSlot | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingImport, setPendingImport] = useState<DailyEntry[] | null>(null);
@@ -35,15 +55,25 @@ export function SettingsPage() {
     setTimeout(() => setSaved(false), 1500);
   }
 
-  function handleSelectMonthCard(card: TarotCard) {
-    setMonthCard(card.id);
-    setMonthCardRecord(getActiveMonthCard());
-    setMonthCardStale(needsMonthCardInput());
-    setPickerOpen(false);
+  function handleSelectLayerCard(card: TarotCard) {
+    if (pickerSlot === "personality") {
+      setPersonalityCard(card.id);
+      setPersonalityState(card.id);
+    } else if (pickerSlot === "year") {
+      setYearCard(card.id);
+      setYearState(card.id);
+    } else if (pickerSlot === "week") {
+      setWeekCard(card.id);
+      setWeekState(getWeekCard());
+      setWeekStale(needsWeekCardInput());
+    } else if (pickerSlot === "month") {
+      setMonthCard(card.id);
+      setMonthState(getMonthCard());
+      setMonthStale(needsMonthCardInput());
+    }
+    setPickerSlot(null);
+    onLayerCardsChanged?.();
   }
-
-  const star = getCardById(SECONDARY_MONTH_CARD_ID);
-  const monthCard = getCardById(monthCardRecord.cardId);
 
   function handleExport() {
     const backup = buildBackup();
@@ -82,48 +112,69 @@ export function SettingsPage() {
     setImportMessage(`${count}개의 기록을 ${mode === "merge" ? "병합" : "전체 교체"}했어요.`);
   }
 
+  const slots: Array<{ key: LayerSlot; cardId: string; stale: boolean }> = [
+    { key: "personality", cardId: personality, stale: false },
+    { key: "year", cardId: year, stale: false },
+    { key: "week", cardId: week.cardId, stale: weekStale },
+    { key: "month", cardId: month.cardId, stale: monthStale },
+  ];
+
   return (
     <div style={{ padding: 16 }}>
       <h1 style={{ fontSize: 22, margin: "0 0 16px" }}>설정</h1>
 
-      <div
-        style={{
-          background: monthCardStale ? "rgba(249,231,149,0.12)" : "rgba(255,255,255,0.05)",
-          border: monthCardStale ? "1px solid rgba(249,231,149,0.4)" : "1px solid transparent",
-          borderRadius: 14,
-          padding: 16,
-          marginBottom: 20,
-        }}
-      >
-        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>이번 달의 카드</div>
-        <p style={{ fontSize: 12, color: "var(--color-text-muted)", lineHeight: 1.6, margin: "0 0 10px" }}>
-          매달 1일, 그달의 운세 카드를 직접 뽑아 여기에 입력해두면 매일 아침 해석에 함께 반영돼요.
+      <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 14, padding: 16, marginBottom: 20 }}>
+        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>층위 카드</div>
+        <p style={{ fontSize: 12, color: "var(--color-text-muted)", lineHeight: 1.6, margin: "0 0 12px" }}>
+          성격·영혼과 올해의 카드는 한 번 정하면 계속 유지돼요. 이번 주·이번 달 카드는 주/달이 바뀌면 갱신 안내가
+          뜨지만 자동으로 지워지지는 않아요.
         </p>
-        {monthCardStale && (
-          <div style={{ fontSize: 12, color: "var(--color-accent)", marginBottom: 10 }}>
-            ⚠️ {monthCardRecord.yearMonth}월 카드가 아직 입력되지 않았어요 (마지막 설정: {monthCard?.nameKo ?? "없음"}).
-          </div>
-        )}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-          <span style={{ fontSize: 13 }}>
-            {monthCard?.nameKo} <span style={{ color: "var(--color-text-muted)", fontSize: 11 }}>({monthCardRecord.yearMonth})</span>
-          </span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {slots.map((slot) => {
+            const meta = SLOT_META[slot.key];
+            const c = getCardById(slot.cardId);
+            return (
+              <div
+                key={slot.key}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  padding: "8px 10px",
+                  borderRadius: 10,
+                  background: slot.stale ? "rgba(249,231,149,0.1)" : "rgba(255,255,255,0.03)",
+                }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 11, color: "var(--color-text-muted)" }}>
+                    {meta.label}
+                    {slot.stale && <span style={{ color: "var(--color-accent)" }}> · 갱신 필요</span>}
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {c?.nameKo}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setPickerSlot(slot.key)}
+                  style={{
+                    flexShrink: 0,
+                    padding: "8px 14px",
+                    borderRadius: 8,
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    background: "rgba(255,255,255,0.06)",
+                    color: "#fff",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  변경
+                </button>
+              </div>
+            );
+          })}
         </div>
-        <button
-          onClick={() => setPickerOpen(true)}
-          style={{
-            width: "100%",
-            padding: 10,
-            borderRadius: 10,
-            border: "none",
-            background: "var(--color-accent)",
-            color: "#1E2761",
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
-        >
-          {monthCardStale ? "이번 달 카드 설정하기" : "이번 달 카드 변경하기"}
-        </button>
       </div>
 
       <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 14, padding: 16, marginBottom: 20 }}>
@@ -163,31 +214,6 @@ export function SettingsPage() {
         >
           {saved ? "저장됨 ✓" : "저장"}
         </button>
-      </div>
-
-      <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 14, padding: 16, marginBottom: 20 }}>
-        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>나의 고정 에너지 컨텍스트</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {ENERGY_CONTEXT.map((item, index) => {
-            const c = index === 2 ? monthCard : getCardById(item.cardId);
-            return (
-              <div key={item.label} style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                <span style={{ color: "var(--color-text-muted)" }}>{item.label}</span>
-                <span>
-                  {c?.nameKo} · {item.weight}%
-                </span>
-              </div>
-            );
-          })}
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-            <span style={{ color: "var(--color-text-muted)" }}>(보조) 영적 희망</span>
-            <span>{star?.nameKo}</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-            <span style={{ color: "var(--color-text-muted)" }}>오늘의 카드 3장</span>
-            <span>{TODAY_CARDS_WEIGHT}%</span>
-          </div>
-        </div>
       </div>
 
       <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 14, padding: 16, marginBottom: 20 }}>
@@ -238,13 +264,13 @@ export function SettingsPage() {
       <h2 style={{ fontSize: 16, margin: "0 0 12px" }}>홈 화면에 추가하기</h2>
       <InstallGuide />
 
-      {pickerOpen && (
+      {pickerSlot && (
         <CardPicker
           cards={ALL_CARDS}
-          title="이번 달의 카드 선택"
-          question="이번 달, 나와 함께하는 에너지는?"
-          onClose={() => setPickerOpen(false)}
-          onSelect={handleSelectMonthCard}
+          title={SLOT_META[pickerSlot].pickerTitle}
+          question={SLOT_META[pickerSlot].question}
+          onClose={() => setPickerSlot(null)}
+          onSelect={handleSelectLayerCard}
         />
       )}
 

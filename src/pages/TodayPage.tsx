@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { CardSpread, type SelectedCards } from "../components/CardSpread";
 import type { Arcana, TarotCard } from "../data/cards";
 import { generateEveningFeedback, generateMorningMessage } from "../lib/generate";
-import { getEntry, needsMonthCardInput, saveEvening, saveMorning, todayString, type DrawnCards } from "../lib/storage";
+import { getEntry, needsMonthCardInput, needsWeekCardInput, saveEvening, saveMorning, todayString, type DrawnCards } from "../lib/storage";
 
 const card = {
   background: "rgba(255,255,255,0.05)",
@@ -13,6 +13,7 @@ const card = {
 
 export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
   const date = todayString();
+  const [weekCardStale] = useState(needsWeekCardInput());
   const [monthCardStale] = useState(needsMonthCardInput());
   const [selected, setSelected] = useState<SelectedCards>({});
   const [morningMessage, setMorningMessage] = useState<string | null>(null);
@@ -102,7 +103,7 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
         <h1 style={{ fontSize: 22, margin: "4px 0 0" }}>오늘의 명상</h1>
       </div>
 
-      {monthCardStale && (
+      {(weekCardStale || monthCardStale) && (
         <button
           onClick={onGoToSettings}
           style={{
@@ -119,7 +120,13 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
             cursor: onGoToSettings ? "pointer" : "default",
           }}
         >
-          🗓️ 이번 달의 카드를 아직 설정하지 않았어요 — 설정 탭에서 입력해주세요 ›
+          🗓️{" "}
+          {weekCardStale && monthCardStale
+            ? "이번 주·이번 달 카드 갱신이 필요해요"
+            : weekCardStale
+              ? "이번 주 카드 갱신이 필요해요"
+              : "이번 달 카드 갱신이 필요해요"}{" "}
+          — 설정 탭에서 확인해주세요 ›
         </button>
       )}
 

@@ -1,6 +1,11 @@
 // 서버 없이 브라우저 로컬 저장소에만 데이터를 저장합니다 (개인정보 보호).
 
-import { ENERGY_CONTEXT } from "../data/energyContext";
+import {
+  DEFAULT_MONTH_CARD_ID,
+  DEFAULT_PERSONALITY_CARD_ID,
+  DEFAULT_WEEK_CARD_ID,
+  DEFAULT_YEAR_CARD_ID,
+} from "../data/energyContext";
 
 export interface DrawnCards {
   major: string; // card id
@@ -26,7 +31,10 @@ export interface DailyEntry {
 const ENTRIES_KEY = "daily-tarot:entries";
 const API_KEY_KEY = "daily-tarot:api-key";
 const UNLOCK_KEY = "daily-tarot:unlocked";
-const MONTH_CARD_KEY = "daily-tarot:month-card";
+const PERSONALITY_CARD_KEY = "daily-tarot:layer-personality";
+const YEAR_CARD_KEY = "daily-tarot:layer-year";
+const WEEK_CARD_KEY = "daily-tarot:layer-week";
+const MONTH_CARD_KEY = "daily-tarot:month-card"; // 기존 키 이름 유지 (이미 저장된 값과 호환)
 
 function loadEntries(): Record<string, DailyEntry> {
   try {
@@ -151,9 +159,68 @@ export function currentYearMonth(): string {
   return todayString().slice(0, 7); // YYYY-MM
 }
 
+// ISO 8601 주차 키 (예: "2026-W30"). 월~일을 한 주로 봅니다.
+export function currentWeekKey(): string {
+  const [y, m, d] = todayString().split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  const dayNum = date.getUTCDay() || 7; // 월=1 ... 일=7
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil(((date.getTime() - yearStart.getTime()) / 86_400_000 + 1) / 7);
+  return `${date.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+}
+
+// 층위 카드: 성격·영혼 / 올해 / 이번 주 / 이번 달 — 서로 독립된 4개 슬롯입니다.
+// 성격·영혼·올해는 만료 개념이 없고, 이번 주·이번 달은 주/달이 바뀌면 재입력을 안내합니다(자동 삭제하지 않음).
+
+export interface WeekCardRecord {
+  weekKey: string; // 이 카드를 설정한 주 (예: "2026-W30")
+  cardId: string;
+}
+
 export interface MonthCardRecord {
   yearMonth: string; // YYYY-MM, 이 카드를 설정한 달
   cardId: string;
+}
+
+export function getPersonalityCard(): string {
+  return localStorage.getItem(PERSONALITY_CARD_KEY) ?? DEFAULT_PERSONALITY_CARD_ID;
+}
+
+export function setPersonalityCard(cardId: string): void {
+  localStorage.setItem(PERSONALITY_CARD_KEY, cardId);
+}
+
+export function getYearCard(): string {
+  return localStorage.getItem(YEAR_CARD_KEY) ?? DEFAULT_YEAR_CARD_ID;
+}
+
+export function setYearCard(cardId: string): void {
+  localStorage.setItem(YEAR_CARD_KEY, cardId);
+}
+
+function getWeekCardRecord(): WeekCardRecord | null {
+  try {
+    const raw = localStorage.getItem(WEEK_CARD_KEY);
+    return raw ? (JSON.parse(raw) as WeekCardRecord) : null;
+  } catch {
+    return null;
+  }
+}
+
+// 매주 첫날, 사용자가 그 주의 카드를 직접 뽑아 입력합니다 (설정 탭에서).
+export function setWeekCard(cardId: string): void {
+  localStorage.setItem(WEEK_CARD_KEY, JSON.stringify({ weekKey: currentWeekKey(), cardId }));
+}
+
+export function getWeekCard(): WeekCardRecord {
+  return getWeekCardRecord() ?? { weekKey: currentWeekKey(), cardId: DEFAULT_WEEK_CARD_ID };
+}
+
+// 이번 주 카드가 아직 입력되지 않았거나, 지난주 카드가 그대로 남아있으면 true.
+export function needsWeekCardInput(): boolean {
+  const record = getWeekCardRecord();
+  return !record || record.weekKey !== currentWeekKey();
 }
 
 function getMonthCardRecord(): MonthCardRecord | null {
@@ -170,12 +237,28 @@ export function setMonthCard(cardId: string): void {
   localStorage.setItem(MONTH_CARD_KEY, JSON.stringify({ yearMonth: currentYearMonth(), cardId }));
 }
 
-export function getActiveMonthCard(): MonthCardRecord {
-  return getMonthCardRecord() ?? { yearMonth: currentYearMonth(), cardId: ENERGY_CONTEXT[2].cardId };
+export function getMonthCard(): MonthCardRecord {
+  return getMonthCardRecord() ?? { yearMonth: currentYearMonth(), cardId: DEFAULT_MONTH_CARD_ID };
 }
 
 // 이번 달 카드가 아직 입력되지 않았거나, 지난달 카드가 그대로 남아있으면 true.
 export function needsMonthCardInput(): boolean {
   const record = getMonthCardRecord();
   return !record || record.yearMonth !== currentYearMonth();
+}
+
+export interface LayerCards {
+  personality: string;
+  year: string;
+  week: WeekCardRecord;
+  month: MonthCardRecord;
+}
+
+export function getLayerCards(): LayerCards {
+  return {
+    personality: getPersonalityCard(),
+    year: getYearCard(),
+    week: getWeekCard(),
+    month: getMonthCard(),
+  };
 }

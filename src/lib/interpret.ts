@@ -1,20 +1,6 @@
 import { getCardById, type Suit } from "../data/cards";
-import { ENERGY_CONTEXT, SECONDARY_MONTH_CARD_ID, TODAY_CARDS_WEIGHT } from "../data/energyContext";
 import { SPREAD_ORDER, SPREAD_POSITIONS } from "../data/spreadMeaning";
-import { getActiveMonthCard, type DrawnCards } from "./storage";
-
-function fixedEnergySummary(): string {
-  const monthCardId = getActiveMonthCard().cardId;
-  const lines = ENERGY_CONTEXT.map((item, index) => {
-    const cardId = index === 2 ? monthCardId : item.cardId;
-    const card = getCardById(cardId);
-    return `- ${item.label} (${item.weight}%): ${card?.nameKo} — ${item.description}`;
-  });
-  const star = getCardById(SECONDARY_MONTH_CARD_ID);
-  if (star) lines.push(`  (보조) ${star.nameKo} — 영적 희망의 결`);
-  lines.push(`- 오늘의 카드 3장 (${TODAY_CARDS_WEIGHT}%): 구체적인 오늘의 일상 가이드`);
-  return lines.join("\n");
-}
+import type { DrawnCards } from "./storage";
 
 function todayCardsSummary(cards: DrawnCards): string {
   return SPREAD_ORDER.map((arcana) => {
@@ -28,26 +14,24 @@ function todayCardsSummary(cards: DrawnCards): string {
 
 // AI(Claude 등)에게 보낼 해석 프롬프트. "분리 배열법 – 쓰리 카드 일일 명상법(100일)"의
 // 포지션 정의(메이저=원형/상징, 인물=인물상, 마이너=현실적 행동·결과)를 그대로 반영합니다.
+// 오늘 뽑은 3장의 카드만 다루며, 층위 카드(성격·영혼/올해/이번 주/이번 달)는 언급하지 않습니다.
 export function buildMorningPrompt(cards: DrawnCards): string {
-  const monthCard = getCardById(getActiveMonthCard().cardId);
-  const weekCard = getCardById(SECONDARY_MONTH_CARD_ID);
-  return `당신은 사용자 전용 타로 명상 가이드입니다. 아래 고정 에너지와 오늘 뽑은 3장의 카드를 결합하여, 오늘 하루를 위한 따뜻하고 "구체적인" 한국어 메시지를 6~8문장으로 작성하세요.
-
-[고정 에너지 컨텍스트 — 항상 유지되는 나의 본질]
-${fixedEnergySummary()}
+  return `당신은 사용자 전용 타로 명상 가이드입니다. 오늘 뽑은 3장의 카드만으로, 오늘 하루를 위한 따뜻하고 "구체적인" 한국어 메시지를 4~6문장으로 작성하세요.
 
 [오늘 뽑은 카드 — 쓰리 카드 일일 명상법(100일), 분리 배열법 응용]
 ${todayCardsSummary(cards)}
 
-작성 순서를 반드시 이 순서대로 지키세요:
-1. 먼저 오늘 뽑은 3장의 카드만으로 하루를 해석하세요. "오늘의 원형(메이저)"과 "오늘의 인물상(인물 카드)"을 엮어서 오늘이 어떤 성격의 날인지 묘사하고, 이어서 "현실적 행동과 결과(마이너 카드)"의 의미를 실제 생활 속 행동(일/업무, 관계, 대화나 결정, 돈·건강·루틴 등 구체적 영역)으로 풀어서 구체적인 행동을 제시하세요. 추상적인 조언 대신 오늘 실제로 할 수 있는 구체적 행동을 제시하세요.
-2. 그다음, 별도의 문장으로 "이번 달의 카드인 ${monthCard?.nameKo}과 이번 주의 ${weekCard?.nameKo}의 기운이 오늘의 행동에 어떻게 더해지는지" 설명하세요 — 이 두 카드는 1번에서 제시한 행동을 뒷받침하거나 색을 더하는 "나중에 언급되는" 배경 에너지입니다. 절대 1번보다 먼저 언급하지 마세요.
-3. 마지막으로 고정 에너지(전차의 의지력 30%, 정의의 균형 25%)가 오늘 하루의 바탕이 되어줌을 짧게 덧붙이세요.
+작성 규칙:
+1. "오늘의 원형(메이저)"과 "오늘의 인물상(인물 카드)"을 엮어서 오늘이 어떤 성격의 날인지 묘사하세요.
+2. 이어서 "현실적 행동과 결과(마이너 카드)"의 의미를 실제 생활 속 행동(일/업무, 관계, 대화나 결정, 돈·건강·루틴 등 구체적 영역)으로 풀어서 구체적인 행동을 제시하세요. 추상적인 조언 대신 오늘 실제로 할 수 있는 구체적 행동을 제시하세요.
+3. 오늘 뽑지 않은 다른 카드나 기간(이번 주, 이번 달, 내일 등)은 절대 언급하지 마세요. 오직 이 3장과 오늘에만 집중하세요.
 4. 명령조가 아닌 다정한 명상 가이드의 어조를 유지하되, 구체성을 절대 잃지 마세요.`;
 }
 
+// 저녁 피드백은 오늘 뽑은 3장(아침의 해석)과 사용자가 직접 쓴 성찰 내용만 다룹니다.
+// 내일/다음 날에 대한 언급은 요청하지 않습니다 — AI가 존재하지 않는 내일의 카드나 상황을 지어내는 것을 막기 위함입니다.
 export function buildEveningPrompt(morningMessage: string, actualDay: string): string {
-  return `당신은 사용자 전용 타로 저널 가이드입니다. 아침의 해석과 실제 하루를 대조하여, 하루를 마무리하는 따뜻한 피드백을 4~6문장으로 작성하세요.
+  return `당신은 사용자 전용 타로 저널 가이드입니다. 아침의 해석과 실제 하루를 대조하여, 하루를 마무리하는 따뜻한 피드백을 3~5문장으로 작성하세요.
 
 [아침의 해석]
 ${morningMessage}
@@ -58,7 +42,7 @@ ${actualDay}
 작성 규칙:
 1. 아침의 메시지가 실제로 어떻게 맞아떨어졌는지, 혹은 다르게 펼쳐졌는지 짚어주세요.
 2. 오늘 하루에서 배울 점이나 의미를 짧게 정리해주세요.
-3. 내일을 위한 부드러운 제안 한 가지로 마무리하세요.
+3. 내일이나 다음 날에 대한 제안, 예측, 새로운 카드 언급은 하지 마세요. 오직 오늘 하루만 다루세요.
 4. 다정하고 성찰적인 어조를 유지하세요.`;
 }
 
@@ -90,24 +74,18 @@ function buildActionSentence(minor: { suit?: Suit; number: number; upright: stri
 }
 
 // API 키가 없을 때 사용하는 결정적(deterministic) 템플릿 해석 — 오프라인에서도 항상 동작합니다.
-// 순서: 1) 오늘 뽑은 3장으로 하루 해석 → 2) 이달/이번 주 카드의 영향 → 3) 고정 에너지 비중
+// 오늘 뽑은 3장(원형 → 인물상 → 현실적 행동)만 다룹니다.
 export function buildTemplateMorningMessage(cards: DrawnCards): string {
   const major = getCardById(cards.major);
   const person = getCardById(cards.person);
   const minor = getCardById(cards.minor);
   if (!major || !person || !minor) return "카드를 3장 모두 선택해주세요.";
 
-  const chariot = getCardById(ENERGY_CONTEXT[0].cardId);
-  const justice = getCardById(ENERGY_CONTEXT[1].cardId);
-  const monthCard = getCardById(getActiveMonthCard().cardId);
-  const weekCard = getCardById(SECONDARY_MONTH_CARD_ID);
   const actionSentence = buildActionSentence(minor);
 
   return [
     `오늘은 ${major.nameKo}의 기운이 함께하는 날이에요. ${major.upright}이 오늘의 분위기와 주제를 감싸고, 그 원형은 오늘 ${person.nameKo}의 모습으로 나에게 살아갑니다 — ${person.upright}.`,
     `현실에서는 ${minor.nameKo}의 결로 이런 행동이 필요해요: ${actionSentence}`,
-    `여기에 이번 달의 카드인 ${monthCard?.nameKo}과 이번 주의 ${weekCard?.nameKo}의 기운이 함께 더해져요 — 그 안정과 희망의 결이, 오늘의 행동을 한결 든든하게 뒷받침해줄 거예요.`,
-    `당신의 본연의 의지력인 ${chariot?.nameKo}(30%)과 ${justice?.nameKo}(25%)의 균형 감각도 오늘 하루의 바탕이 되어줄 거예요.`,
   ].join(" ");
 }
 
@@ -115,11 +93,5 @@ export function buildTemplateEveningFeedback(actualDay: string, satisfaction: nu
   const tone = satisfaction >= 4 ? "오늘 하루, 아침의 메시지와 잘 공명한 것 같아요." : satisfaction <= 2 ? "오늘은 아침의 해석과는 다른 결의 하루였네요." : "오늘 하루는 예상과 비슷한 듯 다른 결로 흘러갔어요.";
   const trimmed = actualDay.trim();
   const excerpt = trimmed.length > 60 ? `${trimmed.slice(0, 60)}...` : trimmed;
-  return [
-    tone,
-    excerpt ? `"${excerpt}"라는 기록 속에서 오늘의 배움을 찾아보세요.` : "",
-    "내일은 오늘의 감각을 살려 조금 더 가볍게 하루를 시작해보는 건 어떨까요?",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  return [tone, excerpt ? `"${excerpt}"라는 기록 속에서 오늘의 배움을 찾아보세요.` : ""].filter(Boolean).join(" ");
 }
