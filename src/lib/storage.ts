@@ -69,6 +69,60 @@ export function saveEvening(date: string, actualDay: string, satisfaction: numbe
   saveEntries(entries);
 }
 
+export interface BackupData {
+  version: 1;
+  exportedAt: string;
+  entries: DailyEntry[];
+}
+
+export function buildBackup(): BackupData {
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    entries: getAllEntries(),
+  };
+}
+
+// 백업 파일 형식을 검증하고 기록 배열을 반환합니다. 형식이 올바르지 않으면 에러를 던집니다.
+export function parseBackup(json: string): DailyEntry[] {
+  let data: unknown;
+  try {
+    data = JSON.parse(json);
+  } catch {
+    throw new Error("JSON 파일을 읽을 수 없어요.");
+  }
+  const entries = (data as { entries?: unknown })?.entries;
+  if (!Array.isArray(entries)) {
+    throw new Error("올바른 백업 파일이 아니에요.");
+  }
+  for (const entry of entries) {
+    if (!entry || typeof entry !== "object" || typeof (entry as DailyEntry).date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test((entry as DailyEntry).date)) {
+      throw new Error("올바른 백업 파일이 아니에요.");
+    }
+  }
+  return entries as DailyEntry[];
+}
+
+// 병합: 겹치지 않는 기존 날짜는 유지하고, 겹치는 날짜는 가져온 기록으로 교체합니다.
+export function importEntriesMerge(importedEntries: DailyEntry[]): number {
+  const entries = loadEntries();
+  for (const entry of importedEntries) {
+    entries[entry.date] = entry;
+  }
+  saveEntries(entries);
+  return importedEntries.length;
+}
+
+// 전체 교체: 기존 기록을 모두 지우고 가져온 기록으로 완전히 대체합니다.
+export function importEntriesOverwrite(importedEntries: DailyEntry[]): number {
+  const entries: Record<string, DailyEntry> = {};
+  for (const entry of importedEntries) {
+    entries[entry.date] = entry;
+  }
+  saveEntries(entries);
+  return importedEntries.length;
+}
+
 export function getApiKey(): string {
   return localStorage.getItem(API_KEY_KEY) ?? "";
 }
