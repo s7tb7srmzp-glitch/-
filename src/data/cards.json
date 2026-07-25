@@ -1,0 +1,1250 @@
+[
+  {
+    "id": "major-0",
+    "name": "0. 바보",
+    "nameEn": "The Fool",
+    "type": "major",
+    "suit": null,
+    "image": "major-0.webp",
+    "imagery": "",
+    "keywords": [
+      "시작",
+      "모험",
+      "자유"
+    ],
+    "upright": "새로운 시작, 순수한 모험, 자유로운 도약",
+    "reversed": "무모함, 방향 상실, 준비 부족"
+  },
+  {
+    "id": "major-1",
+    "name": "1. 마법사",
+    "nameEn": "The Magician",
+    "type": "major",
+    "suit": null,
+    "image": "major-1.webp",
+    "imagery": "",
+    "keywords": [
+      "창조",
+      "주도",
+      "실행력"
+    ],
+    "upright": "의지의 실현, 창조력, 주도적 행동",
+    "reversed": "속임수, 능력 낭비, 목적 상실"
+  },
+  {
+    "id": "major-2",
+    "name": "2. 여사제",
+    "nameEn": "The High Priestess",
+    "type": "major",
+    "suit": null,
+    "image": "major-2.webp",
+    "imagery": "",
+    "keywords": [
+      "직관",
+      "고요함",
+      "내면"
+    ],
+    "upright": "직관, 내면의 지혜, 비밀",
+    "reversed": "억눌린 직관, 표면적 이해, 혼란"
+  },
+  {
+    "id": "major-3",
+    "name": "3. 여황제",
+    "nameEn": "The Empress",
+    "type": "major",
+    "suit": null,
+    "image": "major-3.webp",
+    "imagery": "",
+    "keywords": [
+      "풍요",
+      "성장",
+      "돌봄"
+    ],
+    "upright": "풍요, 돌봄, 창조와 성장",
+    "reversed": "과잉보호, 정체, 소진"
+  },
+  {
+    "id": "major-4",
+    "name": "4. 황제",
+    "nameEn": "The Emperor",
+    "type": "major",
+    "suit": null,
+    "image": "major-4.webp",
+    "imagery": "",
+    "keywords": [
+      "질서",
+      "책임",
+      "안정"
+    ],
+    "upright": "구조, 통제력, 안정적 리더십",
+    "reversed": "경직됨, 독단, 권위 남용"
+  },
+  {
+    "id": "major-5",
+    "name": "5. 교황",
+    "nameEn": "The Hierophant",
+    "type": "major",
+    "suit": null,
+    "image": "major-5.webp",
+    "imagery": "",
+    "keywords": [
+      "전통",
+      "가르침",
+      "신념"
+    ],
+    "upright": "전통, 배움, 신념 체계",
+    "reversed": "관습에 대한 의문, 독단적 믿음"
+  },
+  {
+    "id": "major-6",
+    "name": "6. 연인",
+    "nameEn": "The Lovers",
+    "type": "major",
+    "suit": null,
+    "image": "major-6.webp",
+    "imagery": "",
+    "keywords": [
+      "선택",
+      "연결",
+      "조화"
+    ],
+    "upright": "연결, 선택, 조화로운 관계",
+    "reversed": "불균형, 갈등, 잘못된 선택"
+  },
+  {
+    "id": "major-7",
+    "name": "7. 전차",
+    "nameEn": "The Chariot",
+    "type": "major",
+    "suit": null,
+    "image": "major-7.webp",
+    "imagery": "",
+    "keywords": [
+      "의지력",
+      "추진력",
+      "돌파"
+    ],
+    "upright": "의지력, 돌파, 방향을 잡은 전진",
+    "reversed": "통제력 상실, 방향성 부재"
+  },
+  {
+    "id": "major-8",
+    "name": "8. 힘",
+    "nameEn": "Strength",
+    "type": "major",
+    "suit": null,
+    "image": "major-8.webp",
+    "imagery": "",
+    "keywords": [
+      "용기",
+      "인내",
+      "부드러움"
+    ],
+    "upright": "내면의 용기, 부드러운 통제, 인내",
+    "reversed": "자기 의심, 힘의 오용, 무기력"
+  },
+  {
+    "id": "major-9",
+    "name": "9. 은둔자",
+    "nameEn": "The Hermit",
+    "type": "major",
+    "suit": null,
+    "image": "major-9.webp",
+    "imagery": "",
+    "keywords": [
+      "성찰",
+      "고독",
+      "탐구"
+    ],
+    "upright": "성찰, 홀로 있는 지혜, 내면 탐구",
+    "reversed": "고립, 회피, 길을 잃음"
+  },
+  {
+    "id": "major-10",
+    "name": "10. 운명의 수레바퀴",
+    "nameEn": "Wheel of Fortune",
+    "type": "major",
+    "suit": null,
+    "image": "major-10.webp",
+    "imagery": "",
+    "keywords": [
+      "전환",
+      "순환",
+      "기회"
+    ],
+    "upright": "전환점, 순환, 예상치 못한 변화",
+    "reversed": "정체, 통제 불능의 변화"
+  },
+  {
+    "id": "major-11",
+    "name": "11. 정의",
+    "nameEn": "Justice",
+    "type": "major",
+    "suit": null,
+    "image": "major-11.webp",
+    "imagery": "",
+    "keywords": [
+      "균형",
+      "공정",
+      "객관성"
+    ],
+    "upright": "균형, 공정함, 원인과 결과",
+    "reversed": "불공정, 편향, 책임 회피"
+  },
+  {
+    "id": "major-12",
+    "name": "12. 매달린 사람",
+    "nameEn": "The Hanged Man",
+    "type": "major",
+    "suit": null,
+    "image": "major-12.webp",
+    "imagery": "",
+    "keywords": [
+      "멈춤",
+      "전환",
+      "수용"
+    ],
+    "upright": "관점의 전환, 멈춤, 내려놓음",
+    "reversed": "정체, 저항, 헛된 희생"
+  },
+  {
+    "id": "major-13",
+    "name": "13. 죽음",
+    "nameEn": "Death",
+    "type": "major",
+    "suit": null,
+    "image": "major-13.webp",
+    "imagery": "",
+    "keywords": [
+      "변형",
+      "종결",
+      "재생"
+    ],
+    "upright": "끝과 시작, 변형, 놓아줌",
+    "reversed": "변화에 대한 저항, 정체된 종결"
+  },
+  {
+    "id": "major-14",
+    "name": "14. 절제",
+    "nameEn": "Temperance",
+    "type": "major",
+    "suit": null,
+    "image": "major-14.webp",
+    "imagery": "",
+    "keywords": [
+      "조화",
+      "균형",
+      "치유"
+    ],
+    "upright": "균형, 조화, 서서히 통합함",
+    "reversed": "불균형, 과잉, 조급함"
+  },
+  {
+    "id": "major-15",
+    "name": "15. 악마",
+    "nameEn": "The Devil",
+    "type": "major",
+    "suit": null,
+    "image": "major-15.webp",
+    "imagery": "",
+    "keywords": [
+      "집착",
+      "속박",
+      "그림자"
+    ],
+    "upright": "속박, 집착, 그림자 욕망",
+    "reversed": "속박에서 벗어남, 자각, 해방"
+  },
+  {
+    "id": "major-16",
+    "name": "16. 탑",
+    "nameEn": "The Tower",
+    "type": "major",
+    "suit": null,
+    "image": "major-16.webp",
+    "imagery": "",
+    "keywords": [
+      "붕괴",
+      "각성",
+      "해체"
+    ],
+    "upright": "급격한 붕괴, 진실의 드러남, 각성",
+    "reversed": "지연된 붕괴, 두려움으로 인한 회피"
+  },
+  {
+    "id": "major-17",
+    "name": "17. 별",
+    "nameEn": "The Star",
+    "type": "major",
+    "suit": null,
+    "image": "major-17.webp",
+    "imagery": "",
+    "keywords": [
+      "희망",
+      "치유",
+      "영감"
+    ],
+    "upright": "희망, 치유, 영감",
+    "reversed": "믿음 상실, 좌절, 단절감"
+  },
+  {
+    "id": "major-18",
+    "name": "18. 달",
+    "nameEn": "The Moon",
+    "type": "major",
+    "suit": null,
+    "image": "major-18.webp",
+    "imagery": "",
+    "keywords": [
+      "무의식",
+      "불안",
+      "직관"
+    ],
+    "upright": "무의식, 불안, 모호함 속의 직관",
+    "reversed": "혼란 해소, 두려움 극복"
+  },
+  {
+    "id": "major-19",
+    "name": "19. 태양",
+    "nameEn": "The Sun",
+    "type": "major",
+    "suit": null,
+    "image": "major-19.webp",
+    "imagery": "",
+    "keywords": [
+      "기쁨",
+      "활력",
+      "성취"
+    ],
+    "upright": "기쁨, 활력, 명료한 성공",
+    "reversed": "일시적 우울, 과도한 낙관"
+  },
+  {
+    "id": "major-20",
+    "name": "20. 심판",
+    "nameEn": "Judgement",
+    "type": "major",
+    "suit": null,
+    "image": "major-20.webp",
+    "imagery": "",
+    "keywords": [
+      "각성",
+      "재평가",
+      "부름"
+    ],
+    "upright": "각성, 부름에 대한 응답, 재평가",
+    "reversed": "자기 비판, 결단력 부족"
+  },
+  {
+    "id": "major-21",
+    "name": "21. 세계",
+    "nameEn": "The World",
+    "type": "major",
+    "suit": null,
+    "image": "major-21.webp",
+    "imagery": "",
+    "keywords": [
+      "완성",
+      "통합",
+      "성취"
+    ],
+    "upright": "완성, 통합, 성취의 순환",
+    "reversed": "미완성, 지연된 마무리"
+  },
+  {
+    "id": "person-wands-11",
+    "name": "완드 시종",
+    "nameEn": "Page of wands",
+    "type": "court",
+    "suit": "wands",
+    "image": "person-wands-11.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-wands-12",
+    "name": "완드 기사",
+    "nameEn": "Knight of wands",
+    "type": "court",
+    "suit": "wands",
+    "image": "person-wands-12.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-wands-13",
+    "name": "완드 여왕",
+    "nameEn": "Queen of wands",
+    "type": "court",
+    "suit": "wands",
+    "image": "person-wands-13.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-wands-14",
+    "name": "완드 왕",
+    "nameEn": "King of wands",
+    "type": "court",
+    "suit": "wands",
+    "image": "person-wands-14.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-cups-11",
+    "name": "컵 시종",
+    "nameEn": "Page of cups",
+    "type": "court",
+    "suit": "cups",
+    "image": "person-cups-11.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-cups-12",
+    "name": "컵 기사",
+    "nameEn": "Knight of cups",
+    "type": "court",
+    "suit": "cups",
+    "image": "person-cups-12.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-cups-13",
+    "name": "컵 여왕",
+    "nameEn": "Queen of cups",
+    "type": "court",
+    "suit": "cups",
+    "image": "person-cups-13.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-cups-14",
+    "name": "컵 왕",
+    "nameEn": "King of cups",
+    "type": "court",
+    "suit": "cups",
+    "image": "person-cups-14.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-swords-11",
+    "name": "소드 시종",
+    "nameEn": "Page of swords",
+    "type": "court",
+    "suit": "swords",
+    "image": "person-swords-11.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-swords-12",
+    "name": "소드 기사",
+    "nameEn": "Knight of swords",
+    "type": "court",
+    "suit": "swords",
+    "image": "person-swords-12.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-swords-13",
+    "name": "소드 여왕",
+    "nameEn": "Queen of swords",
+    "type": "court",
+    "suit": "swords",
+    "image": "person-swords-13.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-swords-14",
+    "name": "소드 왕",
+    "nameEn": "King of swords",
+    "type": "court",
+    "suit": "swords",
+    "image": "person-swords-14.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-pentacles-11",
+    "name": "펜타클 시종",
+    "nameEn": "Page of pentacles",
+    "type": "court",
+    "suit": "pentacles",
+    "image": "person-pentacles-11.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-pentacles-12",
+    "name": "펜타클 기사",
+    "nameEn": "Knight of pentacles",
+    "type": "court",
+    "suit": "pentacles",
+    "image": "person-pentacles-12.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-pentacles-13",
+    "name": "펜타클 여왕",
+    "nameEn": "Queen of pentacles",
+    "type": "court",
+    "suit": "pentacles",
+    "image": "person-pentacles-13.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "person-pentacles-14",
+    "name": "펜타클 왕",
+    "nameEn": "King of pentacles",
+    "type": "court",
+    "suit": "pentacles",
+    "image": "person-pentacles-14.webp",
+    "imagery": "",
+    "keywords": [],
+    "persona": {
+      "attitude": "",
+      "behavior": "",
+      "excess": "",
+      "lack": ""
+    }
+  },
+  {
+    "id": "minor-wands-1",
+    "name": "완드 에이스",
+    "nameEn": "1 of wands",
+    "type": "pip",
+    "suit": "wands",
+    "image": "minor-wands-1.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-wands-2",
+    "name": "완드 2",
+    "nameEn": "2 of wands",
+    "type": "pip",
+    "suit": "wands",
+    "image": "minor-wands-2.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-wands-3",
+    "name": "완드 3",
+    "nameEn": "3 of wands",
+    "type": "pip",
+    "suit": "wands",
+    "image": "minor-wands-3.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-wands-4",
+    "name": "완드 4",
+    "nameEn": "4 of wands",
+    "type": "pip",
+    "suit": "wands",
+    "image": "minor-wands-4.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-wands-5",
+    "name": "완드 5",
+    "nameEn": "5 of wands",
+    "type": "pip",
+    "suit": "wands",
+    "image": "minor-wands-5.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-wands-6",
+    "name": "완드 6",
+    "nameEn": "6 of wands",
+    "type": "pip",
+    "suit": "wands",
+    "image": "minor-wands-6.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-wands-7",
+    "name": "완드 7",
+    "nameEn": "7 of wands",
+    "type": "pip",
+    "suit": "wands",
+    "image": "minor-wands-7.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-wands-8",
+    "name": "완드 8",
+    "nameEn": "8 of wands",
+    "type": "pip",
+    "suit": "wands",
+    "image": "minor-wands-8.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-wands-9",
+    "name": "완드 9",
+    "nameEn": "9 of wands",
+    "type": "pip",
+    "suit": "wands",
+    "image": "minor-wands-9.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-wands-10",
+    "name": "완드 10",
+    "nameEn": "10 of wands",
+    "type": "pip",
+    "suit": "wands",
+    "image": "minor-wands-10.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-cups-1",
+    "name": "컵 에이스",
+    "nameEn": "1 of cups",
+    "type": "pip",
+    "suit": "cups",
+    "image": "minor-cups-1.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-cups-2",
+    "name": "컵 2",
+    "nameEn": "2 of cups",
+    "type": "pip",
+    "suit": "cups",
+    "image": "minor-cups-2.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-cups-3",
+    "name": "컵 3",
+    "nameEn": "3 of cups",
+    "type": "pip",
+    "suit": "cups",
+    "image": "minor-cups-3.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-cups-4",
+    "name": "컵 4",
+    "nameEn": "4 of cups",
+    "type": "pip",
+    "suit": "cups",
+    "image": "minor-cups-4.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-cups-5",
+    "name": "컵 5",
+    "nameEn": "5 of cups",
+    "type": "pip",
+    "suit": "cups",
+    "image": "minor-cups-5.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-cups-6",
+    "name": "컵 6",
+    "nameEn": "6 of cups",
+    "type": "pip",
+    "suit": "cups",
+    "image": "minor-cups-6.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-cups-7",
+    "name": "컵 7",
+    "nameEn": "7 of cups",
+    "type": "pip",
+    "suit": "cups",
+    "image": "minor-cups-7.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-cups-8",
+    "name": "컵 8",
+    "nameEn": "8 of cups",
+    "type": "pip",
+    "suit": "cups",
+    "image": "minor-cups-8.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-cups-9",
+    "name": "컵 9",
+    "nameEn": "9 of cups",
+    "type": "pip",
+    "suit": "cups",
+    "image": "minor-cups-9.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-cups-10",
+    "name": "컵 10",
+    "nameEn": "10 of cups",
+    "type": "pip",
+    "suit": "cups",
+    "image": "minor-cups-10.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-swords-1",
+    "name": "소드 에이스",
+    "nameEn": "1 of swords",
+    "type": "pip",
+    "suit": "swords",
+    "image": "minor-swords-1.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-swords-2",
+    "name": "소드 2",
+    "nameEn": "2 of swords",
+    "type": "pip",
+    "suit": "swords",
+    "image": "minor-swords-2.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-swords-3",
+    "name": "소드 3",
+    "nameEn": "3 of swords",
+    "type": "pip",
+    "suit": "swords",
+    "image": "minor-swords-3.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-swords-4",
+    "name": "소드 4",
+    "nameEn": "4 of swords",
+    "type": "pip",
+    "suit": "swords",
+    "image": "minor-swords-4.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-swords-5",
+    "name": "소드 5",
+    "nameEn": "5 of swords",
+    "type": "pip",
+    "suit": "swords",
+    "image": "minor-swords-5.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-swords-6",
+    "name": "소드 6",
+    "nameEn": "6 of swords",
+    "type": "pip",
+    "suit": "swords",
+    "image": "minor-swords-6.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-swords-7",
+    "name": "소드 7",
+    "nameEn": "7 of swords",
+    "type": "pip",
+    "suit": "swords",
+    "image": "minor-swords-7.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-swords-8",
+    "name": "소드 8",
+    "nameEn": "8 of swords",
+    "type": "pip",
+    "suit": "swords",
+    "image": "minor-swords-8.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-swords-9",
+    "name": "소드 9",
+    "nameEn": "9 of swords",
+    "type": "pip",
+    "suit": "swords",
+    "image": "minor-swords-9.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-swords-10",
+    "name": "소드 10",
+    "nameEn": "10 of swords",
+    "type": "pip",
+    "suit": "swords",
+    "image": "minor-swords-10.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-pentacles-1",
+    "name": "펜타클 에이스",
+    "nameEn": "1 of pentacles",
+    "type": "pip",
+    "suit": "pentacles",
+    "image": "minor-pentacles-1.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-pentacles-2",
+    "name": "펜타클 2",
+    "nameEn": "2 of pentacles",
+    "type": "pip",
+    "suit": "pentacles",
+    "image": "minor-pentacles-2.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-pentacles-3",
+    "name": "펜타클 3",
+    "nameEn": "3 of pentacles",
+    "type": "pip",
+    "suit": "pentacles",
+    "image": "minor-pentacles-3.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-pentacles-4",
+    "name": "펜타클 4",
+    "nameEn": "4 of pentacles",
+    "type": "pip",
+    "suit": "pentacles",
+    "image": "minor-pentacles-4.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-pentacles-5",
+    "name": "펜타클 5",
+    "nameEn": "5 of pentacles",
+    "type": "pip",
+    "suit": "pentacles",
+    "image": "minor-pentacles-5.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-pentacles-6",
+    "name": "펜타클 6",
+    "nameEn": "6 of pentacles",
+    "type": "pip",
+    "suit": "pentacles",
+    "image": "minor-pentacles-6.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-pentacles-7",
+    "name": "펜타클 7",
+    "nameEn": "7 of pentacles",
+    "type": "pip",
+    "suit": "pentacles",
+    "image": "minor-pentacles-7.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-pentacles-8",
+    "name": "펜타클 8",
+    "nameEn": "8 of pentacles",
+    "type": "pip",
+    "suit": "pentacles",
+    "image": "minor-pentacles-8.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-pentacles-9",
+    "name": "펜타클 9",
+    "nameEn": "9 of pentacles",
+    "type": "pip",
+    "suit": "pentacles",
+    "image": "minor-pentacles-9.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  },
+  {
+    "id": "minor-pentacles-10",
+    "name": "펜타클 10",
+    "nameEn": "10 of pentacles",
+    "type": "pip",
+    "suit": "pentacles",
+    "image": "minor-pentacles-10.webp",
+    "imagery": "",
+    "keywords": [],
+    "situation": {
+      "scene": "",
+      "action": "",
+      "outcome": "",
+      "caution": ""
+    }
+  }
+]
