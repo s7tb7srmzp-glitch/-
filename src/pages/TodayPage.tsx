@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CardSpread, type SelectedCards } from "../components/CardSpread";
 import { getCardById, type Arcana, type TarotCard } from "../data/cards";
 import { generateEveningFeedback, generateMorningMessage, type EveningResult } from "../lib/generate";
@@ -8,7 +8,19 @@ import {
   OFFLINE_EVENING_NOTICE,
   OFFLINE_MORNING_NOTICE,
 } from "../lib/interpret";
-import { getEntry, needsMonthCardInput, needsWeekCardInput, saveEvening, saveMorning, todayString, type DrawnCards } from "../lib/storage";
+import {
+  dismissMonthBanner,
+  dismissWeekBanner,
+  getEntry,
+  isMonthBannerDismissed,
+  isWeekBannerDismissed,
+  needsMonthCardInput,
+  needsWeekCardInput,
+  saveEvening,
+  saveMorning,
+  todayString,
+  type DrawnCards,
+} from "../lib/storage";
 
 const card = {
   background: "rgba(255,255,255,0.05)",
@@ -21,6 +33,10 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
   const date = todayString();
   const [weekCardStale] = useState(needsWeekCardInput());
   const [monthCardStale] = useState(needsMonthCardInput());
+  const [weekBannerDismissed, setWeekBannerDismissed] = useState(isWeekBannerDismissed());
+  const [monthBannerDismissed, setMonthBannerDismissed] = useState(isMonthBannerDismissed());
+  const showWeekNotice = weekCardStale && !weekBannerDismissed;
+  const showMonthNotice = monthCardStale && !monthBannerDismissed;
   const [selected, setSelected] = useState<SelectedCards>({});
   const [morningMessage, setMorningMessage] = useState<string | null>(null);
   const [morningLoading, setMorningLoading] = useState(false);
@@ -31,6 +47,15 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
   const [satisfaction, setSatisfaction] = useState(3);
   const [evening, setEvening] = useState<EveningResult | null>(null);
   const [eveningLoading, setEveningLoading] = useState(false);
+  const actualDayRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // 저녁 성찰 입력칸: 입력한 내용만큼 높이가 자동으로 늘어납니다 (최소 5줄, 최대 제한 없음).
+  useEffect(() => {
+    const el = actualDayRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [actualDay]);
 
   useEffect(() => {
     const entry = getEntry(date);
@@ -119,31 +144,66 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
         <h1 style={{ fontSize: 22, margin: "4px 0 0" }}>오늘의 명상</h1>
       </div>
 
-      {(weekCardStale || monthCardStale) && (
-        <button
-          onClick={onGoToSettings}
+      {(showWeekNotice || showMonthNotice) && (
+        <div
           style={{
-            display: "block",
+            display: "flex",
+            alignItems: "stretch",
             width: "calc(100% - 32px)",
             margin: "14px 16px 0",
-            padding: "12px 14px",
             borderRadius: 12,
             border: "1px solid rgba(249,231,149,0.4)",
             background: "rgba(249,231,149,0.12)",
-            color: "var(--color-accent)",
-            fontSize: 13,
-            textAlign: "left",
-            cursor: onGoToSettings ? "pointer" : "default",
+            overflow: "hidden",
           }}
         >
-          🗓️{" "}
-          {weekCardStale && monthCardStale
-            ? "이번 주·이번 달 카드 갱신이 필요해요"
-            : weekCardStale
-              ? "이번 주 카드 갱신이 필요해요"
-              : "이번 달 카드 갱신이 필요해요"}{" "}
-          — 설정 탭에서 확인해주세요 ›
-        </button>
+          <button
+            onClick={onGoToSettings}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              background: "none",
+              border: "none",
+              padding: "12px 14px",
+              color: "var(--color-accent)",
+              fontSize: 13,
+              textAlign: "left",
+              cursor: onGoToSettings ? "pointer" : "default",
+            }}
+          >
+            🗓️{" "}
+            {showWeekNotice && showMonthNotice
+              ? "이번 주·이번 달 카드 갱신이 필요해요"
+              : showWeekNotice
+                ? "이번 주 카드 갱신이 필요해요"
+                : "이번 달 카드 갱신이 필요해요"}{" "}
+            — 설정 탭에서 확인해주세요 ›
+          </button>
+          <button
+            onClick={() => {
+              if (showWeekNotice) {
+                dismissWeekBanner();
+                setWeekBannerDismissed(true);
+              }
+              if (showMonthNotice) {
+                dismissMonthBanner();
+                setMonthBannerDismissed(true);
+              }
+            }}
+            aria-label="안내 닫기"
+            style={{
+              background: "none",
+              border: "none",
+              borderLeft: "1px solid rgba(249,231,149,0.25)",
+              padding: "0 14px",
+              color: "var(--color-accent)",
+              fontSize: 15,
+              cursor: "pointer",
+            }}
+          >
+            ✕
+          </button>
+        </div>
       )}
 
       <CardSpread selected={selected} onChange={handleCardChange} />
@@ -181,19 +241,23 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
         <div style={card}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-accent)", marginBottom: 8 }}>Step 2 · 저녁 성찰</div>
           <textarea
+            ref={actualDayRef}
             value={actualDay}
             onChange={(e) => setActualDay(e.target.value)}
             placeholder="오늘 실제로 보낸 하루를 자유롭게 기록해보세요..."
-            rows={4}
+            rows={5}
             style={{
               width: "100%",
+              minHeight: "8.6em", // 5줄(line-height 1.72em) 이상은 항상 유지
               padding: 10,
               borderRadius: 10,
               border: "1px solid rgba(255,255,255,0.2)",
               background: "rgba(255,255,255,0.06)",
               color: "#fff",
               fontSize: 14,
-              resize: "vertical",
+              lineHeight: 1.72,
+              resize: "none",
+              overflow: "hidden",
               fontFamily: "inherit",
             }}
           />

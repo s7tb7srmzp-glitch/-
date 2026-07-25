@@ -40,6 +40,8 @@ const PERSONALITY_CARD_KEY = "daily-tarot:layer-personality";
 const YEAR_CARD_KEY = "daily-tarot:layer-year";
 const WEEK_CARD_KEY = "daily-tarot:layer-week";
 const MONTH_CARD_KEY = "daily-tarot:month-card"; // 기존 키 이름 유지 (이미 저장된 값과 호환)
+const WEEK_BANNER_DISMISSED_KEY = "daily-tarot:week-banner-dismissed";
+const MONTH_BANNER_DISMISSED_KEY = "daily-tarot:month-banner-dismissed";
 
 function loadEntries(): Record<string, DailyEntry> {
   try {
@@ -263,6 +265,23 @@ export function getMonthCard(): MonthCardRecord {
 export function needsMonthCardInput(): boolean {
   const record = getMonthCardRecord();
   return !record || record.yearMonth !== currentYearMonth();
+}
+
+// 갱신 안내 배너를 닫으면 그 주/그 달 동안은 다시 뜨지 않습니다. 주/달이 바뀌면 자동으로 다시 뜹니다.
+export function isWeekBannerDismissed(): boolean {
+  return localStorage.getItem(WEEK_BANNER_DISMISSED_KEY) === currentWeekKey();
+}
+
+export function dismissWeekBanner(): void {
+  localStorage.setItem(WEEK_BANNER_DISMISSED_KEY, currentWeekKey());
+}
+
+export function isMonthBannerDismissed(): boolean {
+  return localStorage.getItem(MONTH_BANNER_DISMISSED_KEY) === currentYearMonth();
+}
+
+export function dismissMonthBanner(): void {
+  localStorage.setItem(MONTH_BANNER_DISMISSED_KEY, currentYearMonth());
 }
 
 export interface LayerCards {
