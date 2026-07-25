@@ -18,7 +18,8 @@ export async function callClaude(prompt: string): Promise<string | null> {
       },
       body: JSON.stringify({
         model: ANTHROPIC_MODEL,
-        max_tokens: 600,
+        // 저녁 피드백은 두 블록(대조 5~7문장 + 한마디 2~3문장)이라 여유가 필요합니다.
+        max_tokens: 1500,
         messages: [{ role: "user", content: prompt }],
       }),
     });

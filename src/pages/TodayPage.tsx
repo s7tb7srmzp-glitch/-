@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import { CardSpread, type SelectedCards } from "../components/CardSpread";
-import type { Arcana, TarotCard } from "../data/cards";
-import { generateEveningFeedback, generateMorningMessage } from "../lib/generate";
+import { getCardById, type Arcana, type TarotCard } from "../data/cards";
+import { generateEveningFeedback, generateMorningMessage, type EveningResult } from "../lib/generate";
+import {
+  EVENING_COMPARISON_TITLE,
+  EVENING_NOTE_TITLE,
+  OFFLINE_EVENING_NOTICE,
+  OFFLINE_MORNING_NOTICE,
+} from "../lib/interpret";
 import { getEntry, needsMonthCardInput, needsWeekCardInput, saveEvening, saveMorning, todayString, type DrawnCards } from "../lib/storage";
 
 const card = {
@@ -19,9 +25,11 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
   const [morningMessage, setMorningMessage] = useState<string | null>(null);
   const [morningLoading, setMorningLoading] = useState(false);
 
+  const [morningOffline, setMorningOffline] = useState(false);
+
   const [actualDay, setActualDay] = useState("");
   const [satisfaction, setSatisfaction] = useState(3);
-  const [eveningFeedback, setEveningFeedback] = useState<string | null>(null);
+  const [evening, setEvening] = useState<EveningResult | null>(null);
   const [eveningLoading, setEveningLoading] = useState(false);
 
   useEffect(() => {
@@ -29,11 +37,15 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
     if (entry?.morning) {
       setSelected(entry.morning.cards);
       setMorningMessage(entry.morning.message);
+      setMorningOffline(entry.morning.message.startsWith(OFFLINE_MORNING_NOTICE));
     }
     if (entry?.evening) {
       setActualDay(entry.evening.actualDay);
       setSatisfaction(entry.evening.satisfaction);
-      setEveningFeedback(entry.evening.feedback);
+      // 예전 기록은 feedback 한 덩어리로 저장돼 있어 대조 블록에 넣어 보여줍니다.
+      const comparison = entry.evening.comparison ?? entry.evening.feedback ?? "";
+      const note = entry.evening.note ?? "";
+      setEvening({ comparison, note, offline: !comparison && !note });
     }
   }, [date]);
 
@@ -49,21 +61,24 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
     const cards: DrawnCards = { major: selected.major!, person: selected.person!, minor: selected.minor! };
     setMorningLoading(true);
     try {
-      const message = await generateMorningMessage(cards);
-      setMorningMessage(message);
-      saveMorning(date, cards, message);
+      const result = await generateMorningMessage(cards);
+      setMorningMessage(result.message);
+      setMorningOffline(result.offline);
+      saveMorning(date, cards, result.message);
     } finally {
       setMorningLoading(false);
     }
   }
 
   async function handleGenerateEvening() {
-    if (!morningMessage || !actualDay.trim()) return;
+    if (!allSelected || !actualDay.trim()) return;
+    const cards: DrawnCards = { major: selected.major!, person: selected.person!, minor: selected.minor! };
     setEveningLoading(true);
     try {
-      const feedback = await generateEveningFeedback(morningMessage, actualDay, satisfaction);
-      setEveningFeedback(feedback);
-      saveEvening(date, actualDay, satisfaction, feedback);
+      const result = await generateEveningFeedback(cards, actualDay, satisfaction);
+      setEvening(result);
+      // AI 연결이 없어도 사용자가 쓴 성찰과 만족도는 저장합니다.
+      saveEvening(date, actualDay, satisfaction, { comparison: result.comparison, note: result.note });
     } finally {
       setEveningLoading(false);
     }
@@ -72,9 +87,10 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
   function handleReset() {
     setSelected({});
     setMorningMessage(null);
+    setMorningOffline(false);
     setActualDay("");
     setSatisfaction(3);
-    setEveningFeedback(null);
+    setEvening(null);
   }
 
   return (
@@ -155,7 +171,9 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
       {morningMessage && (
         <div style={card}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-accent)", marginBottom: 8 }}>Step 1 · 아침 명상</div>
-          <p style={{ margin: 0, lineHeight: 1.7, fontSize: 14 }}>{morningMessage}</p>
+          <p style={{ margin: 0, lineHeight: 1.7, fontSize: 14, whiteSpace: morningOffline ? "pre-wrap" : "normal" }}>
+            {morningMessage}
+          </p>
         </div>
       )}
 
@@ -215,13 +233,73 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
               cursor: actualDay.trim() ? "pointer" : "not-allowed",
             }}
           >
-            {eveningLoading ? "정리하는 중..." : "오늘 마무리하기"}
+            {eveningLoading ? "정리하는 중..." : evening ? "다시 정리하기" : "오늘 마무리하기"}
           </button>
 
-          {eveningFeedback && (
-            <p style={{ marginTop: 14, lineHeight: 1.7, fontSize: 14, borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 12 }}>
-              {eveningFeedback}
-            </p>
+          {evening?.offline && (
+            <div
+              style={{
+                marginTop: 14,
+                borderTop: "1px solid rgba(255,255,255,0.1)",
+                paddingTop: 12,
+                fontSize: 13,
+                lineHeight: 1.7,
+              }}
+            >
+              <div style={{ color: "var(--color-text-muted)", marginBottom: 10 }}>{OFFLINE_EVENING_NOTICE}</div>
+              <div style={{ marginBottom: 6 }}>
+                <span style={{ color: "var(--color-text-muted)" }}>아침 3장 · </span>
+                {[selected.major, selected.person, selected.minor]
+                  .map((id) => (id ? getCardById(id)?.nameKo : null))
+                  .filter(Boolean)
+                  .join(" · ")}
+              </div>
+              <div style={{ marginBottom: 6 }}>
+                <span style={{ color: "var(--color-text-muted)" }}>만족도 · </span>
+                {"⭐".repeat(satisfaction)} ({satisfaction}/5)
+              </div>
+              <div style={{ color: "var(--color-text-muted)", marginBottom: 4 }}>내가 쓴 성찰</div>
+              <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{actualDay}</p>
+              <div style={{ marginTop: 10, fontSize: 12, color: "var(--color-text-muted)" }}>
+                설정에서 API 키를 넣은 뒤 위의 "다시 정리하기"를 누르면 두 블록이 생성됩니다.
+              </div>
+            </div>
+          )}
+
+          {evening && !evening.offline && (
+            <div style={{ marginTop: 14, borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 12 }}>
+              {evening.comparison && (
+                <div
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    borderLeft: "3px solid var(--color-text-muted)",
+                    borderRadius: 8,
+                    padding: "10px 12px",
+                    marginBottom: 12,
+                  }}
+                >
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--color-text-muted)", marginBottom: 6 }}>
+                    {EVENING_COMPARISON_TITLE}
+                  </div>
+                  <p style={{ margin: 0, lineHeight: 1.7, fontSize: 14, whiteSpace: "pre-wrap" }}>{evening.comparison}</p>
+                </div>
+              )}
+              {evening.note && (
+                <div
+                  style={{
+                    background: "rgba(255,214,102,0.08)",
+                    borderLeft: "3px solid var(--color-accent)",
+                    borderRadius: 8,
+                    padding: "10px 12px",
+                  }}
+                >
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--color-accent)", marginBottom: 6 }}>
+                    {EVENING_NOTE_TITLE}
+                  </div>
+                  <p style={{ margin: 0, lineHeight: 1.7, fontSize: 14, whiteSpace: "pre-wrap" }}>{evening.note}</p>
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}

@@ -33,9 +33,14 @@ export function JournalPage() {
               {entry.morning && (
                 <p style={{ margin: "6px 0", fontSize: 13, lineHeight: 1.6 }}>{entry.morning.message}</p>
               )}
-              {entry.evening && (
+              {entry.evening && (entry.evening.comparison ?? entry.evening.feedback) && (
                 <p style={{ margin: "6px 0 0", fontSize: 13, lineHeight: 1.6, color: "var(--color-primary)" }}>
-                  {entry.evening.feedback}
+                  {entry.evening.comparison ?? entry.evening.feedback}
+                </p>
+              )}
+              {entry.evening?.note && (
+                <p style={{ margin: "6px 0 0", fontSize: 13, lineHeight: 1.6, color: "var(--color-accent)" }}>
+                  {entry.evening.note}
                 </p>
               )}
             </div>

@@ -23,7 +23,12 @@ export interface DailyEntry {
   evening?: {
     actualDay: string;
     satisfaction: number; // 1-5
-    feedback: string;
+    /** [오늘의 카드 대조] — 아침 3장과 성찰을 맞춰본 평가 블록 */
+    comparison?: string;
+    /** [오늘의 한마디] — 위로와 조언 블록 */
+    note?: string;
+    /** 두 블록으로 나누기 이전에 저장된 기록. 읽기 전용으로만 씁니다(백업 호환). */
+    feedback?: string;
     createdAt: string;
   };
 }
@@ -67,12 +72,25 @@ export function saveMorning(date: string, cards: DrawnCards, message: string): v
   saveEntries(entries);
 }
 
-export function saveEvening(date: string, actualDay: string, satisfaction: number, feedback: string): void {
+// 두 블록(대조 / 한마디)을 각각 따로 저장합니다.
+// AI 연결이 없어 블록을 만들지 못한 경우에도 사용자가 쓴 성찰과 만족도는 반드시 보존합니다.
+export function saveEvening(
+  date: string,
+  actualDay: string,
+  satisfaction: number,
+  blocks: { comparison: string; note: string },
+): void {
   const entries = loadEntries();
   entries[date] = {
     ...entries[date],
     date,
-    evening: { actualDay, satisfaction, feedback, createdAt: new Date().toISOString() },
+    evening: {
+      actualDay,
+      satisfaction,
+      comparison: blocks.comparison,
+      note: blocks.note,
+      createdAt: new Date().toISOString(),
+    },
   };
   saveEntries(entries);
 }
