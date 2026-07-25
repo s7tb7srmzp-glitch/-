@@ -94,7 +94,7 @@ export function LayerCardStrip() {
             <CardVisual card={openCard} size="lg" />
             <div style={{ fontWeight: 700, fontSize: 15 }}>{openCard.nameKo}</div>
             <div style={{ fontSize: 12, color: "var(--color-text-muted)", textAlign: "center" }}>
-              {openCard.keywords.join(" · ")}
+              {openCard.keywords.length > 0 ? openCard.keywords.join(" · ") : openCard.imagery}
             </div>
             <button
               onClick={() => setOpenCard(null)}
