@@ -18,6 +18,9 @@ export interface DailyEntry {
   morning?: {
     cards: DrawnCards;
     message: string;
+    /** true면 AI 연결 없이 만든 메시지입니다 (예전 기록에는 없을 수 있습니다) */
+    offline?: boolean;
+    offlineReason?: string;
     createdAt: string;
   };
   evening?: {
@@ -64,12 +67,18 @@ export function getAllEntries(): DailyEntry[] {
   return Object.values(loadEntries()).sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export function saveMorning(date: string, cards: DrawnCards, message: string): void {
+export function saveMorning(
+  date: string,
+  cards: DrawnCards,
+  message: string,
+  offline: boolean,
+  offlineReason?: string,
+): void {
   const entries = loadEntries();
   entries[date] = {
     ...entries[date],
     date,
-    morning: { cards, message, createdAt: new Date().toISOString() },
+    morning: { cards, message, offline, offlineReason, createdAt: new Date().toISOString() },
   };
   saveEntries(entries);
 }

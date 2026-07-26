@@ -42,6 +42,7 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
   const [morningLoading, setMorningLoading] = useState(false);
 
   const [morningOffline, setMorningOffline] = useState(false);
+  const [morningOfflineReason, setMorningOfflineReason] = useState<string | undefined>(undefined);
 
   const [actualDay, setActualDay] = useState("");
   const [satisfaction, setSatisfaction] = useState(3);
@@ -62,7 +63,9 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
     if (entry?.morning) {
       setSelected(entry.morning.cards);
       setMorningMessage(entry.morning.message);
-      setMorningOffline(entry.morning.message.startsWith(OFFLINE_MORNING_NOTICE));
+      // 예전 기록에는 offline 플래그가 없어 예전 방식(문구로 시작하는지)으로도 확인합니다.
+      setMorningOffline(entry.morning.offline ?? entry.morning.message.startsWith(OFFLINE_MORNING_NOTICE));
+      setMorningOfflineReason(entry.morning.offlineReason);
     }
     if (entry?.evening) {
       setActualDay(entry.evening.actualDay);
@@ -89,7 +92,8 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
       const result = await generateMorningMessage(cards);
       setMorningMessage(result.message);
       setMorningOffline(result.offline);
-      saveMorning(date, cards, result.message);
+      setMorningOfflineReason(result.offlineReason);
+      saveMorning(date, cards, result.message, result.offline, result.offlineReason);
     } finally {
       setMorningLoading(false);
     }
@@ -113,6 +117,7 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
     setSelected({});
     setMorningMessage(null);
     setMorningOffline(false);
+    setMorningOfflineReason(undefined);
     setActualDay("");
     setSatisfaction(3);
     setEvening(null);
@@ -231,9 +236,23 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
       {morningMessage && (
         <div style={card}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-accent)", marginBottom: 8 }}>Step 1 · 아침 명상</div>
-          <p style={{ margin: 0, lineHeight: 1.7, fontSize: 14, whiteSpace: morningOffline ? "pre-wrap" : "normal" }}>
-            {morningMessage}
-          </p>
+          {morningOffline && (
+            <div
+              style={{
+                fontSize: 12,
+                color: "var(--color-text-muted)",
+                background: "rgba(255,255,255,0.04)",
+                borderRadius: 8,
+                padding: "8px 10px",
+                marginBottom: 10,
+                lineHeight: 1.6,
+              }}
+            >
+              {OFFLINE_MORNING_NOTICE}
+              {morningOfflineReason && <div style={{ marginTop: 4 }}>({morningOfflineReason})</div>}
+            </div>
+          )}
+          <p style={{ margin: 0, lineHeight: 1.7, fontSize: 14, whiteSpace: "pre-wrap" }}>{morningMessage}</p>
         </div>
       )}
 
@@ -310,7 +329,10 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
                 lineHeight: 1.7,
               }}
             >
-              <div style={{ color: "var(--color-text-muted)", marginBottom: 10 }}>{OFFLINE_EVENING_NOTICE}</div>
+              <div style={{ color: "var(--color-text-muted)", marginBottom: 10 }}>
+                {OFFLINE_EVENING_NOTICE}
+                {evening.offlineReason && <div style={{ marginTop: 4, fontSize: 12 }}>({evening.offlineReason})</div>}
+              </div>
               <div style={{ marginBottom: 6 }}>
                 <span style={{ color: "var(--color-text-muted)" }}>아침 3장 · </span>
                 {[selected.major, selected.person, selected.minor]
