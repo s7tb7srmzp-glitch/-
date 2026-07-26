@@ -22,46 +22,19 @@ function hasText(v: string | undefined): v is string {
   return typeof v === "string" && v.trim().length > 0;
 }
 
-/** 자리별로 참조해야 할 데이터를 "라벨: 내용" 줄 목록으로 만듭니다. 비어 있으면 지어내지 않고 그대로 표시합니다. */
-function positionDetailLines(card: TarotCard): string[] {
-  if (card.arcana === "major") {
-    const keywords = card.keywords.filter(hasText);
-    return [`키워드: ${keywords.length > 0 ? keywords.join(", ") : NOT_WRITTEN}`];
-  }
-  if (card.arcana === "person") {
-    const p = card.persona;
-    return [
-      `태도: ${hasText(p?.attitude) ? p.attitude : NOT_WRITTEN}`,
-      `행동: ${hasText(p?.behavior) ? p.behavior : NOT_WRITTEN}`,
-      `과할 때: ${hasText(p?.excess) ? p.excess : NOT_WRITTEN}`,
-      `부족할 때: ${hasText(p?.lack) ? p.lack : NOT_WRITTEN}`,
-    ];
-  }
-  const s = card.situation;
-  return [
-    `상황: ${hasText(s?.scene) ? s.scene : NOT_WRITTEN}`,
-    `오늘 할 행동: ${hasText(s?.action) ? s.action : NOT_WRITTEN}`,
-    `예상되는 결과: ${hasText(s?.outcome) ? s.outcome : NOT_WRITTEN}`,
-    `주의: ${hasText(s?.caution) ? s.caution : NOT_WRITTEN}`,
-  ];
-}
-
+// AI에게는 어떤 카드가 어느 자리에 나왔는지만 알려주고, 해석은 AI가 자신의
+// 타로 지식으로 직접 하도록 합니다. (cards.json의 키워드·묘사는 AI 경로에서
+// 쓰지 않습니다. 그 자료만으로 쓰게 하면 해석이 자료를 그대로 읊는 수준에
+// 머물러서, 사용자 요청에 따라 AI 자체 해석으로 바꿨습니다.)
 function todayCardsSummary(cards: DrawnCards): string {
   return SPREAD_ORDER.map((arcana) => {
     const card = getCardById(cards[arcana]);
     const pos = SPREAD_POSITIONS[arcana];
     if (!card) return "";
-    const detail = positionDetailLines(card)
-      .map((line) => `  ${line}`)
-      .join("\n");
-    return [
-      `- [${pos.title}] ${card.nameKo} (${pos.question})`,
-      `  그림 묘사: ${hasText(card.imagery) ? card.imagery : NOT_WRITTEN}`,
-      detail,
-    ].join("\n");
+    return `${pos.order}. [${pos.title}] ${card.nameKo} (${card.nameEn}) — 이 자리의 질문: ${pos.question}`;
   })
     .filter(Boolean)
-    .join("\n\n");
+    .join("\n");
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -71,23 +44,22 @@ function todayCardsSummary(cards: DrawnCards): string {
 // "분리 배열법 – 쓰리 카드 일일 명상법(100일)"의 포지션 정의를 그대로 반영합니다.
 // 오늘 뽑은 3장만 다루며, 층위 카드(성격·영혼/올해/이번 주/이번 달)는 언급하지 않습니다.
 export function buildMorningPrompt(cards: DrawnCards): string {
-  return `당신은 사용자 전용 타로 명상 가이드입니다. 오늘 뽑은 3장의 카드만으로, 오늘 하루를 위한 한국어 메시지를 4~5문장으로 작성하세요.
+  return `당신은 타로에 깊이 정통한 사용자 전용 명상 가이드입니다. 오늘 뽑은 아래 3장을 당신의 타로 지식으로 직접 해석해, 오늘 하루를 위한 한국어 메시지를 6~8문장으로 작성하세요.
 
 [오늘 뽑은 카드 — 쓰리 카드 일일 명상법(100일), 분리 배열법 응용]
 ${todayCardsSummary(cards)}
 
-[문장 순서]
-1. 먼저 세 장의 그림에 실제로 보이는 것을 짚으세요.
-2. 이어서 각 자리에 주어진 내용(메이저=키워드, 인물=태도·행동, 핍=상황·오늘 할 행동·예상되는 결과·주의)을 풀어 쓰세요.
-3. 마지막으로 세 자리가 오늘 하루 안에서 어떻게 이어지는지 연결하세요.
+[해석 방법]
+1. 각 카드를 그 자리의 질문에 답하는 방식으로 해석하세요. 카드의 상징, 원형적 의미, 수트와 숫자(또는 인물 등급)의 의미를 자유롭게 활용하세요.
+2. 세 자리를 따로 놀게 두지 말고, 1번의 원형이 2번의 인물상으로, 다시 3번의 현실적 행동과 결과로 어떻게 이어지는지 하나의 흐름으로 엮으세요.
+3. 추상적인 미사여구보다, 오늘 하루 안에서 실제로 알아차릴 수 있는 구체적인 장면과 행동으로 풀어 쓰세요.
 
 [반드시 지킬 것]
-1. 위에 주어진 내용만 사용하세요. 카드의 의미를 새로 지어내지 마세요. 여기 적히지 않은 상징 풀이, 수트나 숫자의 일반적 의미, 다른 해석서의 내용을 끌어오지 마세요.
-2. "${NOT_WRITTEN}"라고 적힌 항목은 내용이 없다는 뜻입니다. 그 부분을 추측해서 채우지 말고 그냥 넘어가세요.
-3. 아직 하루가 시작되지 않았습니다. 평가하거나 위로하지 마세요. "좋은 하루가 될 거예요" 같은 말도 넣지 마세요.
-4. 사용자의 감정이나 상태를 추측하지 마세요. "지금 지쳐 있다면", "마음이 무겁겠지만" 같은 표현을 쓰지 마세요.
-5. 오늘 뽑지 않은 다른 카드나 기간(이번 주, 이번 달, 내일 등)은 절대 언급하지 마세요. 오직 이 3장과 오늘에만 집중하세요.
-6. 역방향은 이 타로 방식에서 쓰지 않습니다. 역방향 의미를 언급하지 마세요.`;
+1. 아직 하루가 시작되지 않았습니다. 하루를 평가하거나 위로하지 마세요. "좋은 하루가 될 거예요" 같은 상투적인 덕담도 넣지 마세요.
+2. 사용자의 감정이나 처지를 넘겨짚지 마세요. "지금 지쳐 있다면", "마음이 무겁겠지만" 같은 표현을 쓰지 마세요.
+3. 오늘 뽑지 않은 다른 카드나 기간(이번 주, 이번 달, 내일 등)은 언급하지 마세요. 오직 이 3장과 오늘에만 집중하세요.
+4. 역방향은 이 타로 방식에서 쓰지 않습니다. 모두 정방향으로만 해석하세요.
+5. 카드 이름과 자리 번호를 나열하는 요약체가 아니라, 이어지는 문단으로 읽히게 쓰세요.`;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -95,7 +67,7 @@ ${todayCardsSummary(cards)}
 // ─────────────────────────────────────────────────────────────
 
 export function buildEveningPrompt(cards: DrawnCards, actualDay: string, satisfaction: number): string {
-  return `당신은 사용자 전용 타로 저널 가이드입니다. 아침에 뽑은 3장과 사용자가 직접 쓴 저녁 성찰을 대조하여, 아래 두 블록을 작성하세요.
+  return `당신은 타로에 깊이 정통한 사용자 전용 저널 가이드입니다. 아침에 뽑은 3장을 당신의 타로 지식으로 해석하고, 사용자가 직접 쓴 저녁 성찰과 대조하여 아래 두 블록을 작성하세요.
 
 [아침에 뽑은 3장]
 ${todayCardsSummary(cards)}
@@ -110,7 +82,7 @@ ${actualDay}
 
 [${EVENING_COMPARISON_TITLE}]
 (5~7문장)
-- 아침 3장의 내용과 사용자가 쓴 성찰을 하나씩 직접 맞춰보세요.
+- 아침 3장이 각 자리에서 가리킨 의미와 사용자가 쓴 성찰을 하나씩 직접 맞춰보세요.
 - 사용자가 실제로 쓴 표현을 근거로 인용하세요.
 - 어긋나거나 대응하지 않은 부분을 반드시 하나 이상 짚으세요. 전부 들어맞았다고 쓰지 마세요.
 - 만족도 ${satisfaction}점을 반영하세요. 점수가 낮은 날을 충만한 하루라고 쓰지 마세요.
