@@ -49,7 +49,11 @@ export async function callClaude(prompt: string): Promise<ClaudeResult> {
   }
 
   const data = await response.json();
-  const text = data?.content?.[0]?.text;
+  // content[0]이 항상 텍스트 블록이라고 가정하면 안 됩니다. 응답에 다른 종류의
+  // 블록(예: thinking)이 먼저 올 수 있으므로, type이 "text"인 블록을 찾습니다.
+  const blocks = Array.isArray(data?.content) ? data.content : [];
+  const textBlock = blocks.find((b: unknown) => (b as { type?: string })?.type === "text");
+  const text = (textBlock as { text?: unknown })?.text;
   if (typeof text !== "string") {
     console.error("Claude API 응답 형식을 읽을 수 없습니다:", data);
     return { ok: false, reason: "AI 응답 형식을 읽지 못했어요." };

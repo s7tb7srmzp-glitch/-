@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { MINOR_CARDS, SUIT_LABEL, SUIT_THEME, getCardById, type Arcana, type Suit, type TarotCard } from "../data/cards";
 import { SPREAD_NAME, SPREAD_ORDER, SPREAD_POSITIONS, SPREAD_SOURCE } from "../data/spreadMeaning";
 import { useLockBodyScroll } from "../lib/useLockBodyScroll";
@@ -76,7 +76,8 @@ export function CardSpread({
 // 핍 40장은 한 화면 안에서 수트 필터(칩) + 그 수트 10장 그리드로 보여줍니다.
 // (예전에는 수트 선택 화면 -> 카드 선택 화면 2단계였는데, 한 단계로 줄이고 더 작게 만들었습니다.)
 function PipPicker({ onClose, onSelect }: { onClose: () => void; onSelect: (card: TarotCard) => void }) {
-  useLockBodyScroll();
+  const gridRef = useRef<HTMLDivElement>(null);
+  useLockBodyScroll(gridRef);
   const [suit, setSuit] = useState<Suit>("wands");
   const position = SPREAD_POSITIONS.minor;
   const cards = MINOR_CARDS.filter((c) => c.suit === suit);
@@ -146,6 +147,7 @@ function PipPicker({ onClose, onSelect }: { onClose: () => void; onSelect: (card
         </div>
 
         <div
+          ref={gridRef}
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))",
