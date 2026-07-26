@@ -174,13 +174,15 @@ export function setApiKey(key: string): void {
 export type AiModel = "claude-opus-5" | "claude-sonnet-5";
 
 export const AI_MODEL_LABEL: Record<AiModel, string> = {
-  "claude-opus-5": "깊이 우선 (Opus)",
   "claude-sonnet-5": "속도·비용 우선 (Sonnet)",
+  "claude-opus-5": "깊이 우선 (Opus)",
 };
 
+// 기본값은 Sonnet입니다. 요금 부담 없이 쓰다가, 더 깊은 해석이 필요하면
+// 설정에서 Opus로 바꿀 수 있습니다.
 export function getAiModel(): AiModel {
   const v = localStorage.getItem(AI_MODEL_KEY);
-  return v === "claude-sonnet-5" ? "claude-sonnet-5" : "claude-opus-5";
+  return v === "claude-opus-5" ? "claude-opus-5" : "claude-sonnet-5";
 }
 
 export function setAiModel(model: AiModel): void {

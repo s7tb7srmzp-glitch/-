@@ -223,7 +223,7 @@ export function SettingsPage({ onLayerCardsChanged }: { onLayerCardsChanged?: ()
         <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
           <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>해석 모델</div>
           <p style={{ fontSize: 12, color: "var(--color-text-muted)", lineHeight: 1.6, margin: "0 0 10px" }}>
-            Opus는 더 깊고 풍부한 해석을 주지만 API 요금이 더 많이 나옵니다. Sonnet은 더 빠르고 저렴해요.
+            기본은 Sonnet이에요. 해석이 더 깊었으면 할 때 Opus로 바꾸면 되는데, API 요금이 더 많이 나옵니다.
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {(Object.keys(AI_MODEL_LABEL) as AiModel[]).map((m) => {
