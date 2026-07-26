@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ALL_CARDS, cardsByArcana, type Arcana, type TarotCard } from "../data/cards";
 import { SPREAD_POSITIONS } from "../data/spreadMeaning";
 import { useLockBodyScroll } from "../lib/useLockBodyScroll";
@@ -18,7 +18,8 @@ interface CardPickerProps {
 }
 
 export function CardPicker({ arcana, cards, title, question, searchable = true, onBack, onSelect, onClose }: CardPickerProps) {
-  useLockBodyScroll();
+  const gridRef = useRef<HTMLDivElement>(null);
+  useLockBodyScroll(gridRef);
   const [query, setQuery] = useState("");
   const position = arcana ? SPREAD_POSITIONS[arcana] : undefined;
   const cardList = cards ?? (arcana ? cardsByArcana(arcana) : ALL_CARDS);
@@ -105,6 +106,7 @@ export function CardPicker({ arcana, cards, title, question, searchable = true, 
         )}
 
         <div
+          ref={gridRef}
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))",
