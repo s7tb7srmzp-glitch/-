@@ -1,7 +1,10 @@
-import { getApiKey } from "./storage";
+import { getAiModel, getApiKey } from "./storage";
 
-const ANTHROPIC_MODEL = "claude-sonnet-5";
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
+
+// 한국어는 토큰을 많이 먹어서 예전 1500으로는 해석이 중간에 잘렸습니다.
+// 구조화된 긴 해석을 끝까지 받으려면 넉넉히 잡아야 합니다.
+const MAX_TOKENS = 4000;
 
 export type ClaudeResult = { ok: true; text: string } | { ok: false; reason: string };
 
@@ -22,9 +25,8 @@ export async function callClaude(prompt: string): Promise<ClaudeResult> {
         "anthropic-dangerous-direct-browser-access": "true",
       },
       body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        // 저녁 피드백은 두 블록(대조 5~7문장 + 한마디 2~3문장)이라 여유가 필요합니다.
-        max_tokens: 1500,
+        model: getAiModel(),
+        max_tokens: MAX_TOKENS,
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -57,6 +59,11 @@ export async function callClaude(prompt: string): Promise<ClaudeResult> {
   if (typeof text !== "string") {
     console.error("Claude API 응답 형식을 읽을 수 없습니다:", data);
     return { ok: false, reason: "AI 응답 형식을 읽지 못했어요." };
+  }
+  // 길이 제한에 걸려 잘렸다면 조용히 넘기지 말고 남겨둡니다 (해석이 갑자기
+  // 끊기는 증상의 원인이 됩니다).
+  if (data?.stop_reason === "max_tokens") {
+    console.warn(`AI 응답이 길이 제한(${MAX_TOKENS} 토큰)에 걸려 잘렸습니다.`);
   }
   return { ok: true, text };
 }

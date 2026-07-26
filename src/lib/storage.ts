@@ -38,6 +38,7 @@ export interface DailyEntry {
 
 const ENTRIES_KEY = "daily-tarot:entries";
 const API_KEY_KEY = "daily-tarot:api-key";
+const AI_MODEL_KEY = "daily-tarot:ai-model";
 const UNLOCK_KEY = "daily-tarot:unlocked";
 const PERSONALITY_CARD_KEY = "daily-tarot:layer-personality";
 const YEAR_CARD_KEY = "daily-tarot:layer-year";
@@ -167,6 +168,25 @@ export function getApiKey(): string {
 export function setApiKey(key: string): void {
   if (key) localStorage.setItem(API_KEY_KEY, key);
   else localStorage.removeItem(API_KEY_KEY);
+}
+
+// 해석에 쓸 모델. Opus가 더 깊고 풍부한 해석을 주지만 요금이 더 비쌉니다.
+export type AiModel = "claude-opus-5" | "claude-sonnet-5";
+
+export const AI_MODEL_LABEL: Record<AiModel, string> = {
+  "claude-sonnet-5": "속도·비용 우선 (Sonnet)",
+  "claude-opus-5": "깊이 우선 (Opus)",
+};
+
+// 기본값은 Sonnet입니다. 요금 부담 없이 쓰다가, 더 깊은 해석이 필요하면
+// 설정에서 Opus로 바꿀 수 있습니다.
+export function getAiModel(): AiModel {
+  const v = localStorage.getItem(AI_MODEL_KEY);
+  return v === "claude-opus-5" ? "claude-opus-5" : "claude-sonnet-5";
+}
+
+export function setAiModel(model: AiModel): void {
+  localStorage.setItem(AI_MODEL_KEY, model);
 }
 
 export function isUnlocked(): boolean {

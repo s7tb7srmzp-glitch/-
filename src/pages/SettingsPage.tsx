@@ -3,12 +3,16 @@ import { CardPicker } from "../components/CardPicker";
 import { InstallGuide } from "../components/InstallGuide";
 import { ALL_CARDS, getCardById, type TarotCard } from "../data/cards";
 import {
+  AI_MODEL_LABEL,
   buildBackup,
+  getAiModel,
   getMonthCard,
   getPersonalityCard,
   getWeekCard,
   getYearCard,
   getApiKey,
+  setAiModel,
+  type AiModel,
   importEntriesMerge,
   importEntriesOverwrite,
   needsMonthCardInput,
@@ -35,6 +39,7 @@ const SLOT_META: Record<LayerSlot, { label: string; pickerTitle: string; questio
 export function SettingsPage({ onLayerCardsChanged }: { onLayerCardsChanged?: () => void }) {
   const [key, setKey] = useState(getApiKey());
   const [saved, setSaved] = useState(false);
+  const [model, setModelState] = useState<AiModel>(getAiModel());
 
   const [personality, setPersonalityState] = useState(getPersonalityCard());
   const [year, setYearState] = useState(getYearCard());
@@ -214,6 +219,41 @@ export function SettingsPage({ onLayerCardsChanged }: { onLayerCardsChanged?: ()
         >
           {saved ? "저장됨 ✓" : "저장"}
         </button>
+
+        <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>해석 모델</div>
+          <p style={{ fontSize: 12, color: "var(--color-text-muted)", lineHeight: 1.6, margin: "0 0 10px" }}>
+            기본은 Sonnet이에요. 해석이 더 깊었으면 할 때 Opus로 바꾸면 되는데, API 요금이 더 많이 나옵니다.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {(Object.keys(AI_MODEL_LABEL) as AiModel[]).map((m) => {
+              const active = m === model;
+              return (
+                <button
+                  key={m}
+                  onClick={() => {
+                    setAiModel(m);
+                    setModelState(m);
+                  }}
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 10,
+                    border: active ? "1px solid var(--color-accent)" : "1px solid rgba(255,255,255,0.2)",
+                    background: active ? "rgba(249,231,149,0.14)" : "rgba(255,255,255,0.06)",
+                    color: active ? "var(--color-accent)" : "#fff",
+                    fontWeight: 700,
+                    fontSize: 13,
+                    textAlign: "left",
+                    cursor: "pointer",
+                  }}
+                >
+                  {active ? "● " : "○ "}
+                  {AI_MODEL_LABEL[m]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 14, padding: 16, marginBottom: 20 }}>
