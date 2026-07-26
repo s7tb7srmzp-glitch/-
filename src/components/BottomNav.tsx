@@ -13,6 +13,7 @@ export function BottomNav({ active, onChange }: { active: Tab; onChange: (tab: T
       style={{
         position: "sticky",
         bottom: 0,
+        zIndex: 10, // 카드 피커 등 모달(zIndex 50)보다 항상 아래에 있어야 합니다
         display: "flex",
         justifyContent: "space-around",
         background: "rgba(16,20,58,0.95)",

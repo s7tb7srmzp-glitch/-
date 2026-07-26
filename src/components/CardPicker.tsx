@@ -57,6 +57,7 @@ export function CardPicker({ arcana, cards, title, question, searchable = true, 
           display: "flex",
           flexDirection: "column",
           gap: 12,
+          overflow: "hidden",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -107,6 +108,8 @@ export function CardPicker({ arcana, cards, title, question, searchable = true, 
             gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))",
             gap: 10,
             overflowY: "auto",
+            flex: 1,
+            minHeight: 0,
             paddingBottom: 8,
           }}
         >
