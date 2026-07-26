@@ -15,7 +15,7 @@ const NOT_WRITTEN = "아직 작성되지 않았습니다";
 export const EVENING_COMPARISON_TITLE = "오늘의 카드 대조";
 export const EVENING_NOTE_TITLE = "오늘의 한마디";
 
-export const OFFLINE_MORNING_NOTICE = "AI 연결 없이 카드 데이터만 표시합니다.";
+export const OFFLINE_MORNING_NOTICE = "AI 연결 없이, 오늘 카드에 적힌 내용만으로 정리했습니다.";
 export const OFFLINE_EVENING_NOTICE = "AI 연결이 없어 오늘의 대조를 만들 수 없습니다.";
 
 function hasText(v: string | undefined): v is string {
@@ -162,21 +162,52 @@ export function parseEveningBlocks(raw: string): EveningBlocks {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 오프라인 경로 — "생성"을 흉내내지 않습니다
+// 오프라인 경로 — 자리별 데이터는 그대로 보여주고, 세 자리를 잇는 문장만
+// 여러 문형 중 하나를 무작위로 골라 만듭니다. 문형 하나만 고정해서 쓰면
+// 그 자체가 매일 반복되는 새 공식이 되므로, 여러 개를 두고 매번 다르게 고릅니다.
+// 문형이 채우는 내용은 전부 cards.json의 keywords/persona/situation에서만 가져오고
+// 새로운 의미를 지어내지 않습니다.
 // ─────────────────────────────────────────────────────────────
 
-// AI 연결이 없을 때는 연결 문장을 만들지 않습니다.
-// 매일 같은 연결 문형이 반복되면 그것이 곧 또 하나의 공식이 되기 때문입니다.
-// 자리별 라벨과 cards.json의 내용을 그대로 보여주기만 합니다.
+function orNotWritten(v: string | undefined): string {
+  return hasText(v) ? v : NOT_WRITTEN;
+}
+
+type LinkCards = { major: TarotCard; person: TarotCard; minor: TarotCard };
+
+const LINK_TEMPLATES: Array<(c: LinkCards) => string> = [
+  ({ major, person, minor }) =>
+    `오늘의 원형은 ${major.keywords.join("·")}. 그 원형은 오늘 ${person.nameKo}의 태도로 나타나요 — ${orNotWritten(person.persona?.attitude)} 현실에서는: ${orNotWritten(minor.situation?.action)}`,
+  ({ major, person, minor }) =>
+    `오늘의 바탕은 ${major.nameKo}(${major.keywords.join("·")})이고, 그 바탕을 사는 방식은 ${person.nameKo}이며, 오늘 실제로 일어나는 일은 ${minor.nameKo}입니다. ${orNotWritten(person.persona?.behavior)} 그러면: ${orNotWritten(minor.situation?.outcome)}`,
+  ({ major, person, minor }) =>
+    `오늘 하루는 ${major.keywords.join(", ")}의 결을 따라 흘러요. ${person.nameKo}처럼 ${orNotWritten(person.persona?.attitude)} 그 결과로 ${orNotWritten(minor.situation?.outcome)}`,
+  ({ major, person, minor }) =>
+    `${minor.nameKo}의 상황(${orNotWritten(minor.situation?.scene)})은 ${person.nameKo}의 태도(${orNotWritten(person.persona?.attitude)})와 맞닿아 있고, 그 바탕에는 ${major.nameKo}의 ${major.keywords.join("·")} 기운이 있어요.`,
+  ({ major, person, minor }) =>
+    `세 장을 순서대로 이으면: ${major.keywords.join("·")} → ${orNotWritten(person.persona?.attitude)} → ${orNotWritten(minor.situation?.action)} 다만, ${orNotWritten(minor.situation?.caution)}`,
+];
+
+function buildOfflineMorningLink(cards: LinkCards): string {
+  const template = LINK_TEMPLATES[Math.floor(Math.random() * LINK_TEMPLATES.length)];
+  return template(cards);
+}
+
 export function buildOfflineMorningView(cards: DrawnCards): string {
+  const resolved = {
+    major: getCardById(cards.major),
+    person: getCardById(cards.person),
+    minor: getCardById(cards.minor),
+  };
+
   const blocks = SPREAD_ORDER.map((arcana) => {
-    const card = getCardById(cards[arcana]);
+    const card = resolved[arcana];
     const pos = SPREAD_POSITIONS[arcana];
     if (!card) return "";
     return [
       `[${pos.title}] ${card.nameKo}`,
       `그림 묘사`,
-      `  ${hasText(card.imagery) ? card.imagery : NOT_WRITTEN}`,
+      `  ${orNotWritten(card.imagery)}`,
       ...positionDetailLines(card).map((line) => {
         const [label, ...rest] = line.split(": ");
         return `${label}\n  ${rest.join(": ")}`;
@@ -184,5 +215,12 @@ export function buildOfflineMorningView(cards: DrawnCards): string {
     ].join("\n");
   }).filter(Boolean);
 
-  return [OFFLINE_MORNING_NOTICE, "", ...blocks.join("\n\n").split("\n")].join("\n");
+  const lines = [OFFLINE_MORNING_NOTICE, "", ...blocks.join("\n\n").split("\n")];
+
+  if (resolved.major && resolved.person && resolved.minor) {
+    const link = buildOfflineMorningLink({ major: resolved.major, person: resolved.person, minor: resolved.minor });
+    lines.push("", "[오늘의 연결]", `  ${link}`);
+  }
+
+  return lines.join("\n");
 }

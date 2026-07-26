@@ -16,11 +16,9 @@ export function CardSpread({
   onChange: (arcana: Arcana, card: TarotCard) => void;
 }) {
   const [pickerFor, setPickerFor] = useState<Arcana | null>(null);
-  const [pipSuit, setPipSuit] = useState<Suit | null>(null);
 
   function closePicker() {
     setPickerFor(null);
-    setPipSuit(null);
   }
 
   function handleSelect(arcana: Arcana, card: TarotCard) {
@@ -69,24 +67,18 @@ export function CardSpread({
         />
       )}
 
-      {pickerFor === "minor" && !pipSuit && <SuitChooser onClose={closePicker} onSelect={setPipSuit} />}
-
-      {pickerFor === "minor" && pipSuit && (
-        <CardPicker
-          cards={MINOR_CARDS.filter((c) => c.suit === pipSuit)}
-          title={`${SUIT_LABEL[pipSuit]} 카드 선택`}
-          question={SPREAD_POSITIONS.minor.question}
-          searchable={false}
-          onBack={() => setPipSuit(null)}
-          onClose={closePicker}
-          onSelect={(card) => handleSelect("minor", card)}
-        />
-      )}
+      {pickerFor === "minor" && <PipPicker onClose={closePicker} onSelect={(card) => handleSelect("minor", card)} />}
     </section>
   );
 }
 
-function SuitChooser({ onClose, onSelect }: { onClose: () => void; onSelect: (suit: Suit) => void }) {
+// 핍 40장은 한 화면 안에서 수트 필터(칩) + 그 수트 10장 그리드로 보여줍니다.
+// (예전에는 수트 선택 화면 -> 카드 선택 화면 2단계였는데, 한 단계로 줄이고 더 작게 만들었습니다.)
+function PipPicker({ onClose, onSelect }: { onClose: () => void; onSelect: (card: TarotCard) => void }) {
+  const [suit, setSuit] = useState<Suit>("wands");
+  const position = SPREAD_POSITIONS.minor;
+  const cards = MINOR_CARDS.filter((c) => c.suit === suit);
+
   return (
     <div
       role="dialog"
@@ -99,17 +91,19 @@ function SuitChooser({ onClose, onSelect }: { onClose: () => void; onSelect: (su
         style={{
           background: "var(--color-bg-elevated)",
           width: "100%",
+          maxHeight: "80dvh",
           borderRadius: "20px 20px 0 0",
-          padding: "16px 16px calc(24px + env(safe-area-inset-bottom))",
+          padding: "16px 16px calc(16px + env(safe-area-inset-bottom))",
           display: "flex",
           flexDirection: "column",
-          gap: 14,
+          gap: 12,
+          overflow: "hidden",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 16 }}>{SPREAD_POSITIONS.minor.title} 카드 선택</div>
-            <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>먼저 수트를 골라주세요</div>
+            <div style={{ fontWeight: 700, fontSize: 16 }}>{position.title} 카드 선택</div>
+            <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{position.question}</div>
           </div>
           <button
             onClick={onClose}
@@ -120,26 +114,53 @@ function SuitChooser({ onClose, onSelect }: { onClose: () => void; onSelect: (su
           </button>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          {SUITS.map((suit) => (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {SUITS.map((s) => {
+            const active = s === suit;
+            const color = SUIT_THEME[s].color;
+            return (
+              <button
+                key={s}
+                onClick={() => setSuit(s)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "8px 14px",
+                  borderRadius: 999,
+                  border: `1px solid ${active ? color : `${color}55`}`,
+                  background: active ? color : `${color}1a`,
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: 13,
+                  cursor: "pointer",
+                }}
+              >
+                <span style={{ fontSize: 11, opacity: 0.85 }}>{SUIT_THEME[s].element}</span>
+                {SUIT_LABEL[s]}
+              </button>
+            );
+          })}
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))",
+            gap: 10,
+            overflowY: "auto",
+            flex: 1,
+            minHeight: 0,
+            paddingBottom: 8,
+          }}
+        >
+          {cards.map((card) => (
             <button
-              key={suit}
-              onClick={() => onSelect(suit)}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 4,
-                padding: "18px 10px",
-                borderRadius: 14,
-                border: `1px solid ${SUIT_THEME[suit].color}66`,
-                background: `${SUIT_THEME[suit].color}22`,
-                cursor: "pointer",
-              }}
+              key={card.id}
+              onClick={() => onSelect(card)}
+              style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", justifyContent: "center" }}
             >
-              <span style={{ fontSize: 13, color: "var(--color-text-muted)" }}>{SUIT_THEME[suit].element}</span>
-              <span style={{ fontWeight: 700, fontSize: 16, color: "#fff" }}>{SUIT_LABEL[suit]}</span>
-              <span style={{ fontSize: 11, color: "var(--color-text-muted)" }}>10장</span>
+              <CardVisual card={card} size="sm" />
             </button>
           ))}
         </div>
