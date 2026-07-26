@@ -193,34 +193,14 @@ function buildOfflineMorningLink(cards: LinkCards): string {
   return template(cards);
 }
 
+// 카드별 그림 묘사·항목을 전부 나열하던 방식은 없앴습니다. AI 연결이 안 될 때는
+// 세 자리를 잇는 짧은 문장 하나만 보여줍니다 (내용은 여전히 keywords/persona/situation에서만 가져옵니다).
 export function buildOfflineMorningView(cards: DrawnCards): string {
   const resolved = {
     major: getCardById(cards.major),
     person: getCardById(cards.person),
     minor: getCardById(cards.minor),
   };
-
-  const blocks = SPREAD_ORDER.map((arcana) => {
-    const card = resolved[arcana];
-    const pos = SPREAD_POSITIONS[arcana];
-    if (!card) return "";
-    return [
-      `[${pos.title}] ${card.nameKo}`,
-      `그림 묘사`,
-      `  ${orNotWritten(card.imagery)}`,
-      ...positionDetailLines(card).map((line) => {
-        const [label, ...rest] = line.split(": ");
-        return `${label}\n  ${rest.join(": ")}`;
-      }),
-    ].join("\n");
-  }).filter(Boolean);
-
-  const lines = [OFFLINE_MORNING_NOTICE, "", ...blocks.join("\n\n").split("\n")];
-
-  if (resolved.major && resolved.person && resolved.minor) {
-    const link = buildOfflineMorningLink({ major: resolved.major, person: resolved.person, minor: resolved.minor });
-    lines.push("", "[오늘의 연결]", `  ${link}`);
-  }
-
-  return lines.join("\n");
+  if (!resolved.major || !resolved.person || !resolved.minor) return "";
+  return buildOfflineMorningLink({ major: resolved.major, person: resolved.person, minor: resolved.minor });
 }
