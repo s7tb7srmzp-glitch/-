@@ -49,3 +49,35 @@ a {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
 }
+
+/* PDF 내보내기(브라우저 인쇄) 전용 영역. 평소에는 숨겨둡니다. */
+#print-root {
+  display: none;
+}
+
+@media print {
+  body > *:not(#print-root) {
+    display: none !important;
+  }
+  #print-root {
+    display: block !important;
+    background: #fff;
+    padding: 24px;
+  }
+  /* 어두운 테마 색을 그대로 인쇄하면 종이 위에서 안 보이거나 잉크가 낭비되므로,
+     인쇄본은 검은 글자·흰 배경으로 강제합니다. 카드 이미지 자체 색은
+     background가 아니라 img 콘텐츠라 영향을 받지 않습니다. */
+  #print-root * {
+    color: #111 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-color: #ccc !important;
+  }
+  #print-root img {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .print-page-break {
+    break-after: page;
+  }
+}
