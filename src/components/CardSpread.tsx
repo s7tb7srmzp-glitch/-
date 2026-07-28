@@ -134,7 +134,6 @@ function PipPicker({ onClose, onSelect }: { onClose: () => void; onSelect: (card
           gap: 10,
           overflowY: "auto",
           overscrollBehavior: "contain",
-          WebkitOverflowScrolling: "touch",
           flex: 1,
           minHeight: 0,
           paddingBottom: 8,

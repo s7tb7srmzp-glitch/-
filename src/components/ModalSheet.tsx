@@ -24,9 +24,15 @@ export function ModalSheet({
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // overflow(단축 속성)로 껐다 켜면 안 됩니다. <main>은 React가 overflowY만
+    // 인라인으로 지정하는데, 단축 속성에 값을 대입하면 overflow-x·overflow-y
+    // 롱핸드가 함께 덮어써지고, 복원 시 style.overflow = ""로 되돌려도 그
+    // 롱핸드들이 지워질 뿐 "auto"로 되돌아가지 않습니다. React는 자기가 마지막에
+    // 넘긴 overflowY 값("auto")이 안 바뀌었다고 보고 다시 적용하지 않기 때문에,
+    // 모달을 한 번이라도 열었다 닫으면 <main>이 영영 스크롤되지 않는 버그였습니다.
     const scroller = document.querySelector("main");
-    const prevOverflow = scroller?.style.overflow ?? "";
-    if (scroller) scroller.style.overflow = "hidden";
+    const prevOverflowY = scroller?.style.overflowY ?? "";
+    if (scroller) scroller.style.overflowY = "hidden";
 
     // 그리드 밖(시트 헤더·수트 칩·배경)에서 시작한 터치 스크롤은 막아, 스크롤이
     // 카드 그리드 안에서만 일어나게 합니다.
@@ -39,7 +45,7 @@ export function ModalSheet({
     document.addEventListener("touchmove", onTouchMove, { passive: false });
 
     return () => {
-      if (scroller) scroller.style.overflow = prevOverflow;
+      if (scroller) scroller.style.overflowY = prevOverflowY;
       document.removeEventListener("touchmove", onTouchMove);
     };
   }, [scrollRef]);

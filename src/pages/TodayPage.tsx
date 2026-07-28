@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CardSpread, type SelectedCards } from "../components/CardSpread";
+import { FormattedMessage } from "../components/FormattedMessage";
 import { getCardById, type Arcana, type TarotCard } from "../data/cards";
 import { generateEveningFeedback, generateMorningMessage, type EveningResult } from "../lib/generate";
 import {
@@ -28,34 +29,6 @@ const card = {
   padding: 16,
   margin: "0 16px 16px",
 };
-
-// AI 해석은 "[오늘의 원형] 세계" 같은 소제목으로 나뉘어 옵니다.
-// 대괄호 줄은 소제목으로, 나머지는 본문 문단으로 보여줍니다.
-function MorningMessage({ text }: { text: string }) {
-  const lines = text.split("\n");
-  return (
-    <div style={{ fontSize: 14, lineHeight: 1.75 }}>
-      {lines.map((line, i) => {
-        const trimmed = line.trim();
-        if (!trimmed) return <div key={i} style={{ height: 10 }} />;
-        const heading = /^\[(.+?)\]\s*(.*)$/.exec(trimmed);
-        if (heading) {
-          return (
-            <div key={i} style={{ marginTop: i === 0 ? 0 : 16, marginBottom: 6 }}>
-              <span style={{ fontWeight: 700, color: "var(--color-accent)" }}>{heading[1]}</span>
-              {heading[2] && <span style={{ fontWeight: 700, marginLeft: 6 }}>{heading[2]}</span>}
-            </div>
-          );
-        }
-        return (
-          <p key={i} style={{ margin: "0 0 8px", whiteSpace: "pre-wrap" }}>
-            {trimmed}
-          </p>
-        );
-      })}
-    </div>
-  );
-}
 
 export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
   const date = todayString();
@@ -280,7 +253,7 @@ export function TodayPage({ onGoToSettings }: { onGoToSettings?: () => void }) {
               {morningOfflineReason && <div style={{ marginTop: 4 }}>({morningOfflineReason})</div>}
             </div>
           )}
-          <MorningMessage text={morningMessage} />
+          <FormattedMessage text={morningMessage} />
         </div>
       )}
 
